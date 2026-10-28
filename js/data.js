@@ -51,7 +51,7 @@ const PRINTERS = [
         blocks: [
           { type: 'seq', seq: [
             { key: true }, { k: 'PROGRAMMAZIONE' }, { n: '690' }, { k: 'SUBTOT' },
-            { n: '14789', cap: 'password' }, { k: 'SUBTOT' },
+            { n: '147896', cap: 'password' }, { k: 'SUBTOT' },
             { n: '00', cap: 'seleziona SÌ' }, { k: 'SUBTOT' }
           ] },
           { type: 'note', kind: 'info', text: 'Il tasto 00 serve per spostarsi da un\'opzione all\'altra: premilo finché è selezionato SÌ, poi conferma con SUBTOT.' }
