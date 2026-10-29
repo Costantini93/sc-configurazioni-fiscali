@@ -27,6 +27,17 @@
  *   proprietà facoltative: cap (didascalia sotto il token), x (numero di ripetizioni)
  */
 
+// Emotiq: legenda e annullo scontrino, usati da più procedure
+const EMOTIQ_LEGEND = [
+  { tok: { k: 'SBT' }, text: 'Subtotale: conferma' },
+  { tok: { k: 'CHIUSURA' }, text: 'Tasto punto con sopra la freccia' },
+  { tok: { n: '15290' }, text: 'Codice tecnico, quando richiesto' }
+];
+const EMOTIQ_ANNULLO = [
+  { n: '87' }, { k: 'SBT' }, { t: 'data di emissione' },
+  { t: 'n. documento', cap: '8 cifre, senza il -' }, { k: 'SBT' }, { k: 'SBT' }
+];
+
 const PRINTERS = [
   {
     id: 'custom-big',
@@ -862,18 +873,35 @@ const PRINTERS = [
     id: 'emotiq-attivazione',
     name: 'Attivazione Nota 2',
     brand: 'Emotiq',
-    summary: 'Test connessione, configurazione con Emotiq Tools, verifica IVA e QR code.',
+    summary: 'Connessione Wi-Fi, test di rete, configurazione con Emotiq Tools, verifica IVA e QR code.',
     needs: [
       'PC con Emotiq Tools',
-      'P.IVA e C.F. del cliente'
+      'P.IVA e C.F. del cliente',
+      'Nome e password del Wi-Fi del cliente'
     ],
+    legend: EMOTIQ_LEGEND,
     steps: [
       {
         phase: 'Connessione',
-        title: 'Test connessione',
+        title: 'Collega la cassa al Wi-Fi',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ n: '685' }, { k: 'SUBTOTALE' }] }
+          { type: 'seq', seq: [
+            { n: '833' }, { k: 'SBT' }, { n: '15290', cap: 'codice' }, { k: 'SBT' },
+            { m: 'WIFI 1' }, { k: 'SBT' }, { m: 'ELENCO RETI' }
+          ] },
+          { type: 'seq', label: 'Quando la cassa ha stampato l\'elenco delle reti:', seq: [
+            { t: 'numero della rete' }, { k: 'SBT' }, { t: 'password del Wi-Fi' }, { k: 'SBT' }
+          ] }
+        ]
+      },
+      {
+        phase: 'Connessione',
+        title: 'Test di rete',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '685' }, { k: 'SBT' }] },
+          { type: 'note', kind: 'info', text: 'Se non funziona, riprova. Quando funziona, prosegui con Emotiq Tools.' }
         ]
       },
       {
@@ -899,7 +927,7 @@ const PRINTERS = [
         where: 'emotiq',
         blocks: [
           { type: 'seq', seq: [{ m: 'Modifica' }, { m: 'Configura' }, { m: 'Intestazione' }] },
-          { type: 'note', kind: 'info', text: 'Logo: Modifica → Configura → Opzioni. Per cancellare il logo esistente dallo scontrino: Modifica → Configura grafica e porta il numero a 0.' }
+          { type: 'note', kind: 'info', text: 'Logo: Modifica → Configura → Opzioni. Per cancellare il logo esistente dallo scontrino: Modifica → Configura grafica e porta il numero a 0 (dalla cassa: 638 SBT 0 SBT).' }
         ]
       },
       {
@@ -933,7 +961,8 @@ const PRINTERS = [
         title: 'Info generale RT',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ n: '808' }, { k: 'SUBTOTALE' }] }
+          { type: 'seq', seq: [{ n: '808' }, { k: 'SBT' }] },
+          { type: 'note', kind: 'info', text: 'Stampa modello, versione software e scadenza della verifica.' }
         ]
       },
       {
@@ -954,7 +983,9 @@ const PRINTERS = [
     id: 'emotiq-verifica',
     name: 'Verifica periodica Nota / Model M / Opera 57',
     brand: 'Emotiq',
-    summary: 'QR code, chiusura, test Wi-Fi, scontrini di prova con annullo e registro intervento.',
+    summary: 'QR code, chiusura, test di rete, scontrini di prova con annullo, registrazione della verifica e check-list.',
+    needs: ['C.F. del tecnico e P.IVA del laboratorio', 'Check-list della verifica'],
+    legend: EMOTIQ_LEGEND,
     steps: [
       {
         phase: 'Apertura',
@@ -969,15 +1000,16 @@ const PRINTERS = [
         title: 'Chiusura',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ k: 'FRECCIA / PUNTO', cap: 'tieni premuto 3 secondi' }] }
+          { type: 'seq', seq: [{ k: 'CHIUSURA', cap: 'tieni premuto 3 secondi' }] },
+          { type: 'note', kind: 'info', text: 'Questa chiusura la tiene il cliente: va allegata alla chiusura della sera.' }
         ]
       },
       {
         phase: 'Apertura',
-        title: 'Test Wi-Fi',
+        title: 'Test di rete',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ n: '685' }, { k: 'SUBTOTALE' }] }
+          { type: 'seq', seq: [{ n: '685' }, { k: 'SBT' }] }
         ]
       },
       {
@@ -993,7 +1025,7 @@ const PRINTERS = [
         title: 'Annulla lo scontrino',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ n: '87' }, { k: 'SUBTOTALE' }, { t: 'data' }, { t: 'numero' }, { k: 'SUBTOTALE' }] }
+          { type: 'seq', seq: EMOTIQ_ANNULLO }
         ]
       },
       {
@@ -1001,7 +1033,7 @@ const PRINTERS = [
         title: 'Scontrino lotteria',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ n: '88' }, { k: 'SUBTOTALE' }] }
+          { type: 'seq', seq: [{ n: '88' }, { k: 'SBT' }] }
         ]
       },
       {
@@ -1009,7 +1041,7 @@ const PRINTERS = [
         title: 'Scontrino elettronico',
         where: 'printer',
         blocks: [
-          { type: 'list', items: ['Fai uno scontrino da 1,25 € su un reparto, pagamento elettronico.'] }
+          { type: 'list', items: ['Fai uno scontrino da 1,25 € su un reparto, pagamento POS.'] }
         ]
       },
       {
@@ -1017,32 +1049,48 @@ const PRINTERS = [
         title: 'Annulla lo scontrino',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ n: '87' }, { k: 'SUBTOTALE' }, { t: 'data' }, { t: 'numero' }, { k: 'SUBTOTALE' }] }
+          { type: 'seq', seq: EMOTIQ_ANNULLO }
         ]
       },
       {
-        phase: 'Chiusura',
+        phase: 'Registrazione',
+        title: 'Registra la verifica',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '825' }, { k: 'SBT' }, { n: '15290', cap: 'codice' }, { k: 'SBT' }] },
+          { type: 'seq', label: 'Poi:', seq: [{ t: 'C.F. tecnico' }, { t: 'P.IVA laboratorio' }, { k: 'SBT' }] },
+          { type: 'seq', label: 'Scegli il tipo di intervento:', seq: [
+            { k: '+ / −', cap: 'scorri le opzioni' }, { m: 'VER. PERIODICA POS.' }, { k: 'SBT' },
+            { t: 'scrivi OK' }, { k: 'SBT' }
+          ] }
+        ]
+      },
+      {
+        phase: 'Registrazione',
         title: 'Chiusura',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ k: 'FRECCIA / PUNTO', cap: 'tieni premuto 3 secondi' }] }
+          { type: 'seq', seq: [{ k: 'CHIUSURA', cap: 'tieni premuto 3 secondi' }] }
         ]
       },
       {
-        phase: 'Chiusura',
-        title: 'Registro intervento',
-        where: 'printer',
-        blocks: [
-          { type: 'seq', seq: [{ n: '825' }, { k: 'SUBTOTALE' }, { n: '15290', cap: 'codice' }, { k: 'SUBTOTALE' }] }
-        ]
-      },
-      {
-        phase: 'Chiusura',
+        phase: 'Consegna',
         title: 'Scontrino per la check-list',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ n: '808' }, { k: 'SUBTOTALE' }] },
+          { type: 'seq', seq: [{ n: '808' }, { k: 'SBT' }] },
           { type: 'note', kind: 'info', text: 'Attacca lo scontrino alla check-list.' }
+        ]
+      },
+      {
+        phase: 'Consegna',
+        title: 'Consegna al cliente',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: [
+            'Lascia tutte le prove al cliente da conservare.',
+            'Compila la check-list.'
+          ] }
         ]
       }
     ]
@@ -1050,29 +1098,54 @@ const PRINTERS = [
 
   {
     id: 'emotiq-dgfe',
-    name: 'Rinnovo DGFE Emotiq',
+    name: 'Estensione DGFE Emotiq',
     brand: 'Emotiq',
-    summary: 'Acquisto del rinnovo sul portale EmotiqMe e rinnovo con la chiusura.',
+    summary: 'Estensione della DGFE dall\'app, scaricamento con la chiusura e controllo finale.',
+    needs: ['Telefono con l\'app / portale EmotiqMe', 'Matricola della macchina'],
+    legend: EMOTIQ_LEGEND,
     steps: [
       {
-        phase: 'Portale',
-        title: 'Acquista il rinnovo',
+        phase: 'Estensione',
+        title: 'Estendi la DGFE',
         where: 'web',
         blocks: [
           { type: 'list', items: [
-            'Apri il portale EmotiqMe.',
+            'Apri l\'app sul telefono (portale EmotiqMe).',
             'Nella zona DGFE inserisci la matricola della macchina.',
-            'Conferma l\'acquisto del rinnovo DGFE.'
+            'Conferma l\'acquisto dell\'estensione DGFE.'
           ] }
         ]
       },
       {
-        phase: 'Rinnovo',
+        phase: 'Scaricamento',
         title: 'Chiusura',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ k: 'FRECCIA / PUNTO', cap: 'tieni premuto 3 secondi' }] },
-          { type: 'note', kind: 'info', text: 'Con la chiusura la macchina si collega al portale ed esegue il rinnovo.' }
+          { type: 'seq', seq: [{ k: 'CHIUSURA', cap: 'tieni premuto 3 secondi' }] },
+          { type: 'list', items: [
+            'La cassa si collega da sola al server e scarica l\'estensione.',
+            'Quando compare INVIATO CON SUCCESSO stacca il foglietto: è la chiusura che il cliente deve allegare alla chiusura della sera.'
+          ] },
+          { type: 'note', kind: 'warn', text: 'Se la DGFE è esaurita la cassa non permette la chiusura. In quel caso, dopo l\'estensione dall\'app, usa questa sequenza al posto della chiusura:' },
+          { type: 'seq', seq: [{ n: '823' }, { k: 'SBT' }, { n: '15290', cap: 'codice' }, { k: 'SBT' }] }
+        ]
+      },
+      {
+        phase: 'Controllo',
+        title: 'Controllo estensione',
+        where: 'printer',
+        intro: 'Quando compare ESTENSIONE DGFE:',
+        blocks: [
+          { type: 'seq', seq: [{ n: '808' }, { k: 'SBT' }] },
+          { type: 'list', items: ['Attacca tutto lo scontrino sul foglio dell\'estensione DGFE.'] }
+        ]
+      },
+      {
+        phase: 'Controllo',
+        title: 'Verifica il QR code',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Inquadra il QR code e controlla che si sia aggiornato.'] }
         ]
       }
     ]
@@ -1082,15 +1155,161 @@ const PRINTERS = [
     id: 'emotiq-annullo',
     name: 'Annullo scontrino Emotiq',
     brand: 'Emotiq',
-    summary: 'Annullamento di uno scontrino.',
+    summary: 'Annullamento di uno scontrino, con ristampa se il cliente non ha lo scontrino.',
+    legend: EMOTIQ_LEGEND,
     steps: [
+      {
+        phase: 'Dati scontrino',
+        title: 'Ristampa gli scontrini del giorno',
+        where: 'printer',
+        intro: 'Solo se il cliente non ha lo scontrino: ristampa gli scontrini di quel giorno per trovare il numero.',
+        blocks: [
+          { type: 'seq', seq: [
+            { n: '712' }, { k: 'SBT' }, { t: 'data di emissione' }, { k: 'SBT' },
+            { t: 'ripeti la data' }, { k: 'SBT' }, { n: '0' }, { k: 'SBT' }, { k: 'SBT' }
+          ] },
+          { type: 'note', kind: 'tip', text: 'Se hai lo scontrino, passa direttamente allo step successivo.' }
+        ]
+      },
       {
         phase: 'Annullo',
         title: 'Annulla lo scontrino',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ n: '87' }, { k: 'SUBTOTALE' }, { t: 'data' }, { t: 'numero' }, { k: 'SUBTOTALE' }] },
-          { type: 'note', kind: 'info', text: 'Segui le istruzioni sul display.' }
+          { type: 'seq', seq: EMOTIQ_ANNULLO },
+          { type: 'note', kind: 'info', text: 'Il numero documento sono le 8 cifre, senza il trattino.' }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'emotiq-ripristino',
+    name: 'Ripristino Opera',
+    brand: 'Emotiq',
+    summary: 'Reimpostazione di data, ora e dati fiscali dopo un reset della cassa.',
+    needs: ['C.F. e P.IVA del cliente'],
+    legend: EMOTIQ_LEGEND,
+    steps: [
+      {
+        phase: 'Data e ora',
+        title: 'Data',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ t: 'data di oggi' }, { k: 'SBT' }, { k: 'SBT' }] }
+        ]
+      },
+      {
+        phase: 'Data e ora',
+        title: 'Ora',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ t: 'ora, minuti, secondi', cap: 'secondi 00' }, { k: 'SBT' }, { k: 'SBT' }] }
+        ]
+      },
+      {
+        phase: 'Dati fiscali',
+        title: 'C.F. e P.IVA',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ t: 'C.F.' }, { k: 'SBT' }, { t: 'P.IVA' }, { k: 'SBT' }] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Verifica periodica',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Fai la verifica periodica (procedura "Verifica periodica Nota / Model M / Opera 57").'] },
+          { type: 'note', kind: 'warn', text: 'Dopo ogni reset della cassa va sempre fatta una verifica periodica.' }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'emotiq-non-invia',
+    name: 'Opera non invia',
+    brand: 'Emotiq',
+    summary: 'Controllo della rete, ricollegamento e invio dei corrispettivi sospesi.',
+    needs: ['Nome (SSID) e password della rete del cliente'],
+    legend: EMOTIQ_LEGEND,
+    steps: [
+      {
+        phase: 'Controllo',
+        title: 'Controlla il display',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Verifica se sul display compaiono i 2 triangolini sovrapposti.'] }
+        ]
+      },
+      {
+        phase: 'Controllo',
+        title: 'Test di rete',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '685' }, { k: 'SBT' }] }
+        ]
+      },
+      {
+        phase: 'Rete',
+        title: 'Verifica le reti',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '826' }, { k: 'SBT' }, { n: '15290', cap: 'codice' }, { k: 'SBT' }] }
+        ]
+      },
+      {
+        phase: 'Rete',
+        title: 'Collegati alla rete',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Collega la cassa a una rete usando SSID e password.'] }
+        ]
+      },
+      {
+        phase: 'Rete',
+        title: 'Test di rete',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '685' }, { k: 'SBT' }] }
+        ]
+      },
+      {
+        phase: 'Invio',
+        title: 'Invia i corrispettivi',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '688' }, { k: 'SBT' }] }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'emotiq-disattivazione',
+    name: 'Disattivazione Emotiq',
+    brand: 'Emotiq',
+    summary: 'Chiusura e disattivazione della cassa.',
+    needs: ['C.F. del tecnico e P.IVA del laboratorio'],
+    legend: EMOTIQ_LEGEND,
+    steps: [
+      {
+        phase: 'Chiusura',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ k: 'CHIUSURA', cap: 'tieni premuto 3 secondi' }] }
+        ]
+      },
+      {
+        phase: 'Disattivazione',
+        title: 'Disattiva la cassa',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [
+            { n: '684' }, { k: 'SBT' }, { t: 'C.F. tecnico' }, { k: 'SBT' }, { t: 'P.IVA laboratorio' }, { k: 'SBT' }
+          ] }
         ]
       }
     ]
@@ -1162,9 +1381,14 @@ const PRINTERS = [
 ];
 
 /*
- * Funzioni della Custom (stampate dalla cassa: liste X00, P000 e Z00).
- * Ogni gruppo ha un titolo e l'elenco [codice, descrizione].
+ * Pagine di consultazione (sezione "Consultazione" in home).
+ * Ogni pagina ha delle sezioni, ogni sezione dei gruppi con l'elenco
+ * [codice, descrizione] oppure [codice, descrizione, { seq, note }]
+ * per mostrare anche la sequenza dei tasti. Il codice può essere vuoto.
+ * seq di una sezione: sequenza valida per tutti i codici della sezione.
  */
+
+// Funzioni della Custom (stampate dalla cassa: liste X00, P000 e Z00)
 
 const CUSTOM_FUNCTIONS = [
   {
@@ -1337,5 +1561,91 @@ const CUSTOM_FUNCTIONS = [
         ['Z92', 'TOTALIZZ. OPERATORE']
       ] }
     ]
+  }
+];
+
+// Funzioni utili delle casse Emotiq
+const EMOTIQ_FUNCTIONS = [
+  {
+    id: 'rete',
+    name: 'Rete e invio',
+    groups: [
+      { items: [
+        ['833', 'CONNESSIONE WI-FI', { seq: [
+          { n: '833' }, { k: 'SBT' }, { n: '15290' }, { k: 'SBT' }, { m: 'WIFI 1' }, { k: 'SBT' }, { m: 'ELENCO RETI' },
+          { t: 'n. della rete' }, { k: 'SBT' }, { t: 'password' }, { k: 'SBT' }
+        ], note: 'Aspetta che la cassa stampi l\'elenco delle reti, poi digita il numero della rete.' }],
+        ['685', 'TEST DI RETE', { seq: [{ n: '685' }, { k: 'SBT' }], note: 'Se non funziona, riprova.' }],
+        ['688', 'INVIO SOSPESI', { seq: [{ n: '688' }, { k: 'SBT' }], note: 'Prima controlla che la cassa sia connessa con il test di rete 685.' }],
+        ['826', 'VERIFICA RETI', { seq: [{ n: '826' }, { k: 'SBT' }, { n: '15290' }, { k: 'SBT' }] }]
+      ] }
+    ]
+  },
+  {
+    id: 'scontrini',
+    name: 'Scontrini e chiusure',
+    groups: [
+      { items: [
+        ['87', 'ANNULLO SCONTRINO', { seq: EMOTIQ_ANNULLO, note: 'Il numero documento sono le 8 cifre, senza il trattino.' }],
+        ['88', 'SCONTRINO LOTTERIA', { seq: [{ n: '88' }, { k: 'SBT' }] }],
+        ['712', 'RISTAMPA SCONTRINI DI UN GIORNO', { seq: [
+          { n: '712' }, { k: 'SBT' }, { t: 'data' }, { k: 'SBT' }, { t: 'ripeti la data' }, { k: 'SBT' }, { n: '0' }, { k: 'SBT' }, { k: 'SBT' }
+        ], note: 'Utile se il cliente non ha lo scontrino da annullare.' }],
+        ['714', 'RISTAMPA CHIUSURE', { seq: [
+          { n: '714' }, { k: 'SBT' }, { t: 'data' }, { k: 'SBT' }, { t: 'ripeti la data' }, { k: 'SBT' }, { n: '0' }, { k: 'SBT' }, { k: 'SBT' }
+        ] }],
+        ['', 'CHIUSURA', { seq: [{ k: 'CHIUSURA', cap: 'tieni premuto 3 secondi' }], note: 'Tasto punto con sopra la freccia.' }]
+      ] }
+    ]
+  },
+  {
+    id: 'config',
+    name: 'Configurazione',
+    groups: [
+      { items: [
+        ['', 'TOGLIERE IL LIMITE PER UNA BATTUTA', { seq: [{ k: 'CHIUSURA', cap: 'premi una volta' }, { t: 'batti lo scontrino' }] }],
+        ['601', 'TOGLIERE IL LIMITE PERMANENTEMENTE', { seq: [
+          { n: '601' }, { k: 'SBT' }, { t: 'reparto che ti interessa' }, { k: 'SBT', cap: 'per spostarti' }, { m: 'LIMITE' }
+        ] }],
+        ['638', 'TOGLIERE IL LOGO DALLO SCONTRINO', { seq: [{ n: '638' }, { k: 'SBT' }, { n: '0' }, { k: 'SBT' }] }],
+        ['309', 'METTERE LA VIRGOLA DECIMALE', { seq: [{ n: '309' }, { k: 'SBT' }, { n: '1' }] }],
+        ['609', 'GESTIONE OPERATORI', { seq: [{ n: '609' }, { k: 'SBT' }] }]
+      ] }
+    ]
+  },
+  {
+    id: 'tecnico',
+    name: 'Tecnico',
+    groups: [
+      { items: [
+        ['808', 'MODELLO, SOFTWARE E SCADENZA VERIFICA', { seq: [{ n: '808' }, { k: 'SBT' }] }],
+        ['827', 'AGGIORNAMENTO SOFTWARE', { seq: [{ n: '827' }, { k: 'SBT' }] }],
+        ['825', 'REGISTRAZIONE VERIFICA PERIODICA', { seq: [
+          { n: '825' }, { k: 'SBT' }, { n: '15290' }, { k: 'SBT' }, { t: 'C.F. tecnico' }, { t: 'P.IVA lab.' }, { k: 'SBT' },
+          { k: '+ / −' }, { m: 'VER. PERIODICA POS.' }, { k: 'SBT' }, { t: 'OK' }, { k: 'SBT' }
+        ] }],
+        ['823', 'ESTENSIONE CON DGFE ESAURITA', { seq: [{ n: '823' }, { k: 'SBT' }, { n: '15290' }, { k: 'SBT' }], note: 'Dopo aver esteso la DGFE dall\'app, quando la cassa non permette la chiusura.' }],
+        ['684', 'DISATTIVAZIONE', { seq: [
+          { n: '684' }, { k: 'SBT' }, { t: 'C.F. tecnico' }, { k: 'SBT' }, { t: 'P.IVA laboratorio' }, { k: 'SBT' }
+        ], note: 'Fai prima la chiusura.' }]
+      ] }
+    ]
+  }
+];
+
+const FUNCTION_PAGES = [
+  {
+    id: 'custom',
+    name: 'Funzioni Custom',
+    meta: 'Codici report X, programmazioni e azzeramenti Z',
+    intro: 'Elenco dei codici disponibili sulla cassa Custom.',
+    sections: CUSTOM_FUNCTIONS
+  },
+  {
+    id: 'emotiq',
+    name: 'Funzioni Emotiq',
+    meta: 'Funzioni utili con la sequenza dei tasti',
+    intro: 'Funzioni utili delle casse Emotiq. SBT = subtotale.',
+    sections: EMOTIQ_FUNCTIONS
   }
 ];

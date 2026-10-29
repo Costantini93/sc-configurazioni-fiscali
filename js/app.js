@@ -188,27 +188,38 @@
       '</header>' +
       '<main class="printer-list">' + cards +
         '<div class="list-title">Consultazione</div>' +
-        '<a class="printer-card" href="#/funzioni">' +
-          '<span class="printer-icon">' + ICON.list + '</span>' +
-          '<span class="printer-body">' +
-            '<span class="printer-name">Funzioni Custom</span>' +
-            '<span class="printer-meta">Codici report X, programmazioni e azzeramenti Z</span>' +
-          '</span>' +
-          '<span class="printer-go">' + ICON.arrow + '</span>' +
-        '</a>' +
+        FUNCTION_PAGES.map(function (f) {
+          return '<a class="printer-card" href="#/funzioni/' + f.id + '">' +
+            '<span class="printer-icon">' + ICON.list + '</span>' +
+            '<span class="printer-body">' +
+              '<span class="printer-name">' + esc(f.name) + '</span>' +
+              '<span class="printer-meta">' + esc(f.meta) + '</span>' +
+            '</span>' +
+            '<span class="printer-go">' + ICON.arrow + '</span>' +
+          '</a>';
+        }).join('') +
       '</main>' +
     '</div>';
   }
 
-  function viewFunctions() {
-    var sections = CUSTOM_FUNCTIONS.map(function (sec) {
+  function findFunctionPage(id) {
+    for (var i = 0; i < FUNCTION_PAGES.length; i++) if (FUNCTION_PAGES[i].id === id) return FUNCTION_PAGES[i];
+    return null;
+  }
+
+  function viewFunctions(page) {
+    var sections = page.sections.map(function (sec) {
       var count = 0;
       var groups = sec.groups.map(function (g) {
         count += g.items.length;
-        return '<div class="fn-group"><div class="fn-group-name">' + esc(g.title) + '</div><ul class="fn-list">' +
+        return '<div class="fn-group">' + (g.title ? '<div class="fn-group-name">' + esc(g.title) + '</div>' : '') + '<ul class="fn-list">' +
           g.items.map(function (it) {
-            return '<li data-search="' + esc(normalize(it[0] + it[1])) + '">' +
-              '<span class="fn-code">' + esc(it[0]) + '</span><span>' + esc(it[1]) + '</span></li>';
+            var extra = it[2] || {};
+            return '<li data-search="' + esc(normalize(it[0] + it[1] + (extra.note || ''))) + '"' + (extra.seq ? ' class="fn-rich"' : '') + '>' +
+              '<div class="fn-row">' + (it[0] ? '<span class="fn-code">' + esc(it[0]) + '</span>' : '') + '<span>' + esc(it[1]) + '</span></div>' +
+              (extra.seq ? renderSeq(extra.seq) : '') +
+              (extra.note ? '<p class="fn-note">' + esc(extra.note) + '</p>' : '') +
+            '</li>';
           }).join('') + '</ul></div>';
       }).join('');
       return '<section class="panel fn-section" data-section="' + esc(sec.id) + '">' +
@@ -222,13 +233,13 @@
     return '<div class="screen functions">' +
       topbar('<a class="icon-btn" href="#/" aria-label="Torna alla home">' + ICON.back + '</a>') +
       '<main class="content">' +
-        '<h1 class="fn-title">Funzioni Custom</h1>' +
-        '<p class="muted">Elenco dei codici disponibili sulla cassa Custom.</p>' +
+        '<h1 class="fn-title">' + esc(page.name) + '</h1>' +
+        '<p class="muted">' + esc(page.intro) + '</p>' +
         '<label class="fn-search">' + ICON.search +
           '<input type="search" data-filter placeholder="Cerca codice o funzione (es. wifi)" autocomplete="off" aria-label="Cerca codice o funzione">' +
         '</label>' +
         '<div class="fn-chips" role="group" aria-label="Categoria">' +
-          [{ id: '', name: 'Tutte' }].concat(CUSTOM_FUNCTIONS).map(function (sec) {
+          [{ id: '', name: 'Tutte' }].concat(page.sections).map(function (sec) {
             return '<button class="fn-chip' + (sec.id ? '' : ' is-active') + '" data-chip="' + esc(sec.id) + '" aria-pressed="' + !sec.id + '">' + esc(sec.name) + '</button>';
           }).join('') +
         '</div>' +
@@ -404,7 +415,11 @@
     }
 
     lastStep = { id: null, i: -1 };
-    if (parts[0] === 'funzioni') return render(viewFunctions());
+    if (parts[0] === 'funzioni') {
+      // #/funzioni (vecchio link) apre le funzioni Custom
+      var page = findFunctionPage(parts[1] || 'custom');
+      return page ? render(viewFunctions(page)) : go('#/');
+    }
     render(viewHome());
   }
 
