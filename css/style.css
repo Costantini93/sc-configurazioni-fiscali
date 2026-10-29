@@ -221,6 +221,13 @@ h1, h2 { margin: 0; line-height: 1.25; }
   flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: none;
   color: var(--ink); font: inherit; font-size: 17px;
 }
+.fn-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: -2px 0 14px; }
+.fn-chip {
+  min-height: 40px; padding: 0 14px; border-radius: 999px; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--line);
+  font-size: 14.5px; font-weight: 650; color: var(--muted);
+}
+.fn-chip.is-active { background: var(--brand-2); border-color: var(--brand-2); color: #fff; }
 .fn-count { font-weight: 600; }
 .fn-howto .seq { padding: 12px; }
 .fn-note { margin: 0 0 4px; font-size: 14px; color: var(--muted); }

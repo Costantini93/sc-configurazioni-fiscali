@@ -78,6 +78,10 @@
     return h + (h === 1 ? ' ora' : ' ore') + (m ? ' e ' + m + ' min' : '');
   }
   function go(hash) { location.hash = hash; }
+  // Testo per la ricerca: minuscolo, senza accenti, punteggiatura e spazi ("WI-FI" -> "wifi")
+  function normalize(s) {
+    return String(s).toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
+  }
 
   function logo(cls) {
     return '<picture><source srcset="assets/logo-dark.png" media="(prefers-color-scheme: dark)">' +
@@ -191,11 +195,11 @@
         count += g.items.length;
         return '<div class="fn-group"><div class="fn-group-name">' + esc(g.title) + '</div><ul class="fn-list">' +
           g.items.map(function (it) {
-            return '<li data-search="' + esc((it[0] + ' ' + it[1]).toLowerCase()) + '">' +
+            return '<li data-search="' + esc(normalize(it[0] + it[1])) + '">' +
               '<span class="fn-code">' + esc(it[0]) + '</span><span>' + esc(it[1]) + '</span></li>';
           }).join('') + '</ul></div>';
       }).join('');
-      return '<section class="panel fn-section">' +
+      return '<section class="panel fn-section" data-section="' + esc(sec.id) + '">' +
         '<h2>' + esc(sec.name) + ' <span class="fn-count">· ' + count + '</span></h2>' +
         (sec.seq ? '<div class="fn-howto">' + renderSeq(sec.seq) + '</div>' : '') +
         (sec.note ? '<p class="fn-note">' + esc(sec.note) + '</p>' : '') +
@@ -209,24 +213,33 @@
         '<h1 class="fn-title">Funzioni Custom</h1>' +
         '<p class="muted">Elenco dei codici disponibili sulla cassa Custom.</p>' +
         '<label class="fn-search">' + ICON.search +
-          '<input type="search" data-filter placeholder="Cerca codice o funzione" autocomplete="off" aria-label="Cerca codice o funzione">' +
+          '<input type="search" data-filter placeholder="Cerca codice o funzione (es. wifi)" autocomplete="off" aria-label="Cerca codice o funzione">' +
         '</label>' +
+        '<div class="fn-chips" role="group" aria-label="Categoria">' +
+          [{ id: '', name: 'Tutte' }].concat(CUSTOM_FUNCTIONS).map(function (sec) {
+            return '<button class="fn-chip' + (sec.id ? '' : ' is-active') + '" data-chip="' + esc(sec.id) + '" aria-pressed="' + !sec.id + '">' + esc(sec.name) + '</button>';
+          }).join('') +
+        '</div>' +
         sections +
         '<p class="fn-empty muted" hidden>Nessuna funzione trovata.</p>' +
       '</main>' +
     '</div>';
   }
 
-  // Filtra l'elenco senza ridisegnare la pagina (il campo di ricerca mantiene il focus)
-  function filterFunctions(q) {
-    q = q.trim().toLowerCase();
+  // Filtra l'elenco senza ridisegnare la pagina (il campo di ricerca mantiene il focus).
+  // Ogni parola cercata deve comparire nel codice o nella descrizione.
+  function filterFunctions() {
+    var words = app.querySelector('[data-filter]').value.split(/\s+/).map(normalize).filter(Boolean);
+    var chip = app.querySelector('.fn-chip.is-active').getAttribute('data-chip');
     var any = false;
     app.querySelectorAll('.fn-section').forEach(function (sec) {
       var secHits = 0;
+      var inChip = !chip || sec.getAttribute('data-section') === chip;
       sec.querySelectorAll('.fn-group').forEach(function (g) {
         var hits = 0;
         g.querySelectorAll('li').forEach(function (li) {
-          var ok = !q || li.getAttribute('data-search').indexOf(q) !== -1;
+          var text = li.getAttribute('data-search');
+          var ok = inChip && words.every(function (w) { return text.indexOf(w) !== -1; });
           li.hidden = !ok;
           if (ok) hits++;
         });
@@ -418,6 +431,14 @@
   // ---------- Eventi ----------
 
   app.addEventListener('click', function (e) {
+    var chip = e.target.closest('[data-chip]');
+    if (chip) {
+      app.querySelectorAll('.fn-chip').forEach(function (c) {
+        c.classList.toggle('is-active', c === chip);
+        c.setAttribute('aria-pressed', c === chip);
+      });
+      return filterFunctions();
+    }
     var el = e.target.closest('[data-action],[data-goto]');
     if (!el) return;
     var p = currentPrinter();
@@ -458,7 +479,7 @@
   });
 
   app.addEventListener('input', function (e) {
-    if (e.target.hasAttribute && e.target.hasAttribute('data-filter')) return filterFunctions(e.target.value);
+    if (e.target.hasAttribute && e.target.hasAttribute('data-filter')) return filterFunctions();
     var key = e.target.getAttribute && e.target.getAttribute('data-var');
     var p = currentPrinter();
     if (!key || !p) return;
