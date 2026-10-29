@@ -7,7 +7,8 @@ Funziona da telefono e da PC, anche offline, e si può installare come app.
 
 Tutti i contenuti sono in [js/data.js](js/data.js): ogni stampante ha la sua lista di step.
 In cima al file è spiegato come scrivere tasti, numeri, voci di menu, tabelle e note.
-Per aggiungere una stampante basta copiare un blocco esistente e cambiarne i contenuti.
+Per aggiungere una procedura basta copiare un blocco esistente e cambiarne i contenuti.
+Con `category` scegli in quale categoria del menu compare (Preparazione, Verifica periodica, …) e con `menu` il nome che vi viene mostrato.
 
 ## Pubblicare su GitHub Pages
 

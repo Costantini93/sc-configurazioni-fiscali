@@ -17,6 +17,7 @@
     printer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/><path d="M17 12h.01"/></svg>',
     pc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
     web: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
+    menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>',
     restart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>'
   };
@@ -89,14 +90,67 @@
       '<img class="' + cls + '" src="assets/logo.png" alt="SC Sistemi di Cassa"></picture>';
   }
 
-  // Barra superiore fissa con il logo sempre visibile al centro
-  function topbar(left, right) {
+  // Barra superiore fissa con il logo sempre visibile al centro.
+  // Su mobile a sinistra c'è il pulsante del menu (tranne dentro una procedura: noMenu).
+  function topbar(left, right, noMenu) {
+    var menuBtn = noMenu ? '' : '<button class="icon-btn menu-btn" data-action="open-nav" aria-label="Apri il menu" aria-controls="nav">' + ICON.menu + '</button>';
     return '<header class="topbar">' +
-      (left || '<span class="icon-btn-spacer"></span>') +
+      '<span class="topbar-side">' + menuBtn + (left || '') + '</span>' +
       '<a class="topbar-logo" href="#/" aria-label="Home">' + logo('topbar-logo-img') + '</a>' +
-      (right || '<span class="icon-btn-spacer"></span>') +
+      '<span class="topbar-side right">' + (right || '') + '</span>' +
     '</header>';
   }
+
+  // Procedure raggruppate per categoria, nell'ordine di CATEGORIES
+  function categories() {
+    return CATEGORIES.map(function (name) {
+      return { name: name, items: PRINTERS.filter(function (p) { return p.category === name; }) };
+    }).filter(function (c) { return c.items.length; });
+  }
+
+  // ---------- Menu laterale ----------
+
+  var nav = document.getElementById('nav');
+  var navBackdrop = document.getElementById('nav-backdrop');
+
+  function renderNav() {
+    function link(href, label) {
+      return '<a class="nav-link" href="' + href + '">' + esc(label) + '</a>';
+    }
+    nav.innerHTML =
+      '<div class="nav-head"><span class="nav-title">Procedure</span>' +
+        '<button class="icon-btn nav-close" data-action="close-nav" aria-label="Chiudi il menu">' + ICON.close + '</button></div>' +
+      '<a class="nav-link nav-home" href="#/">Home</a>' +
+      categories().map(function (c) {
+        return '<details class="nav-group" open><summary>' + esc(c.name) + '</summary>' +
+          c.items.map(function (p) { return link('#/p/' + p.id, p.menu); }).join('') + '</details>';
+      }).join('') +
+      '<details class="nav-group" open><summary>Consultazione</summary>' +
+        FUNCTION_PAGES.map(function (f) { return link('#/funzioni/' + f.id, f.name); }).join('') + '</details>';
+  }
+
+  // Evidenzia la voce della pagina aperta (anche dentro una procedura)
+  function updateNav() {
+    var m = location.hash.match(/^#\/(p|funzioni)\/([^/]+)/);
+    var current = m ? '#/' + m[1] + '/' + m[2] : (/^#?\/?$/.test(location.hash) ? '#/' : (location.hash === '#/funzioni' ? '#/funzioni/custom' : ''));
+    nav.querySelectorAll('.nav-link').forEach(function (a) {
+      var on = a.getAttribute('href') === current;
+      a.classList.toggle('is-active', on);
+      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+  }
+
+  function openNav() {
+    document.body.classList.add('nav-open');
+    var active = nav.querySelector('.is-active');
+    if (active) active.scrollIntoView({ block: 'center' });
+  }
+  function closeNav() { document.body.classList.remove('nav-open'); }
+
+  nav.addEventListener('click', function (e) {
+    if (e.target.closest('[data-action="close-nav"]') || e.target.closest('.nav-link')) closeNav();
+  });
+  navBackdrop.addEventListener('click', closeNav);
 
   // ---------- Render dei contenuti ----------
 
@@ -154,13 +208,6 @@
   // ---------- Schermate ----------
 
   function viewHome() {
-    // Raggruppa per marca, nell'ordine in cui le marche compaiono in data.js
-    var brands = [];
-    PRINTERS.forEach(function (p) {
-      var last = brands.filter(function (b) { return b.name === p.brand; })[0];
-      if (last) last.items.push(p);
-      else brands.push({ name: p.brand, items: [p] });
-    });
     function card(p) {
       var pr = progressOf(p.id);
       var nPhases = phasesOf(p).length;
@@ -168,14 +215,14 @@
       return '<a class="printer-card" href="#/p/' + p.id + '">' +
         '<span class="printer-icon">' + ICON.printer + '</span>' +
         '<span class="printer-body">' +
-          '<span class="printer-name">' + esc(p.name) + '</span>' +
+          '<span class="printer-name">' + esc(p.menu) + '</span>' +
           '<span class="printer-meta">' + p.steps.length + ' step · ' + nPhases + (nPhases === 1 ? ' fase' : ' fasi') + '</span>' +
           badge +
         '</span>' +
         '<span class="printer-go">' + ICON.arrow + '</span>' +
       '</a>';
     }
-    var cards = brands.map(function (b) {
+    var cards = categories().map(function (b) {
       return '<div class="list-title">' + esc(b.name) + '</div>' + b.items.map(card).join('');
     }).join('');
 
@@ -321,7 +368,8 @@
     return '<div class="screen wizard">' +
       topbar(
         '<a class="icon-btn" href="#/p/' + p.id + '" aria-label="Esci dalla procedura">' + ICON.close + '</a>',
-        '<button class="icon-btn" data-action="steps" aria-label="Elenco degli step">' + ICON.list + '</button>'
+        '<button class="icon-btn" data-action="steps" aria-label="Elenco degli step">' + ICON.list + '</button>',
+        true
       ) +
       '<div class="progress">' +
         '<div class="progress-meta"><span><strong>' + esc(p.name) + '</strong> · Step <strong>' + (i + 1) + '</strong> di ' + total + '</span>' +
@@ -425,6 +473,7 @@
 
   function render(html) {
     app.innerHTML = html;
+    updateNav();
     window.scrollTo(0, 0);
     var main = app.querySelector('.content');
     if (main) main.scrollTop = 0;
@@ -475,6 +524,7 @@
       return go('#/p/' + p.id + '/step/' + el.getAttribute('data-goto'));
     }
     switch (action) {
+      case 'open-nav': openNav(); break;
       case 'next': next(); break;
       case 'prev': prev(); break;
       case 'start':
@@ -515,6 +565,10 @@
   });
 
   document.addEventListener('keydown', function (e) {
+    if (document.body.classList.contains('nav-open')) {
+      if (e.key === 'Escape') closeNav();
+      return;
+    }
     if (currentStep() < 0) return;
     if (app.querySelector('.sheet-root')) {
       if (e.key === 'Escape') app.querySelector('.sheet-root').remove();
@@ -526,7 +580,8 @@
     else if (!typing && e.key === 'ArrowLeft') prev();
   });
 
-  window.addEventListener('hashchange', route);
+  window.addEventListener('hashchange', function () { closeNav(); route(); });
+  renderNav();
   route();
 
   // Funzionamento offline (solo se servita via http/https, es. GitHub Pages)

@@ -2,7 +2,8 @@
  * Guide di configurazione delle stampanti fiscali.
  *
  * Per aggiungere una procedura basta aggiungere un oggetto all'array PRINTERS.
- * In home le procedure sono raggruppate per marca (brand), nell'ordine in cui compaiono qui.
+ * Nel menu e in home le procedure sono raggruppate per categoria (category, una di CATEGORIES)
+ * e mostrate con il nome breve menu (di solito la stampante).
  * needs (cosa serve) e legend (legenda tasti) sono facoltativi.
  *
  * Ogni step ha:
@@ -38,11 +39,23 @@ const EMOTIQ_ANNULLO = [
   { t: 'n. documento', cap: '8 cifre, senza il -' }, { k: 'SBT' }, { k: 'SBT' }
 ];
 
+// Categorie del menu e della home, in quest'ordine
+const CATEGORIES = [
+  'Preparazione',
+  'Verifica periodica',
+  'Sostituzione DGFE',
+  'Annullo scontrino',
+  'Assistenza',
+  'Altre procedure'
+];
+
 const PRINTERS = [
   {
     id: 'custom-big',
     name: 'Configurazione Custom Big',
     brand: 'Custom',
+    category: 'Preparazione',
+    menu: 'Custom Big',
     summary: 'Fiscalizzazione, censimento, attivazione, configurazione con RX Config e verifica finale.',
     needs: [
       'Stampante collegata alla rete con cavo Ethernet',
@@ -244,6 +257,8 @@ const PRINTERS = [
     id: 'smart',
     name: 'Preparazione Smart RT',
     brand: 'Labware',
+    category: 'Preparazione',
+    menu: 'Labware Smart RT',
     summary: 'Data e ora, censimento, aggiornamenti, configurazione con la React app e verifica finale.',
     needs: [
       'Stampante accesa e collegata alla rete',
@@ -386,6 +401,8 @@ const PRINTERS = [
     id: 'custom-verifica',
     name: 'Verifica periodica Custom',
     brand: 'Custom',
+    category: 'Verifica periodica',
+    menu: 'Custom',
     summary: 'QR code, chiusura, aggiornamento firmware, scontrini di prova con annullo, registrazione intervento.',
     steps: [
       {
@@ -477,6 +494,8 @@ const PRINTERS = [
     id: 'custom-registrazione',
     name: 'Registrazione intervento Custom',
     brand: 'Custom',
+    category: 'Altre procedure',
+    menu: 'Custom · Registrazione intervento',
     summary: 'Chiusura e registrazione dell\'intervento tecnico.',
     steps: [
       {
@@ -511,6 +530,8 @@ const PRINTERS = [
     id: 'custom-annullo',
     name: 'Annullo scontrino Custom',
     brand: 'Custom',
+    category: 'Annullo scontrino',
+    menu: 'Custom',
     summary: 'Annullamento di uno scontrino.',
     steps: [
       {
@@ -530,6 +551,8 @@ const PRINTERS = [
     id: 'custom-k3',
     name: 'Tastierino K3',
     brand: 'Custom',
+    category: 'Altre procedure',
+    menu: 'Custom · Tastierino K3',
     summary: 'Passaggio da FPU a LOCAL e stampa dell\'elenco delle programmazioni.',
     steps: [
       {
@@ -564,6 +587,8 @@ const PRINTERS = [
     id: 'labware-dgfe',
     name: 'Sostituzione DGFE Smart RT',
     brand: 'Labware',
+    category: 'Sostituzione DGFE',
+    menu: 'Labware Smart RT',
     summary: 'Chiusura, sostituzione fisica della DGFE, inizializzazione, registrazione intervento e verifica.',
     needs: [
       'DGFE nuova',
@@ -664,6 +689,8 @@ const PRINTERS = [
     id: 'labware-basic',
     name: 'Labware Basic',
     brand: 'Labware',
+    category: 'Preparazione',
+    menu: 'Labware Basic',
     summary: 'Censimento, attivazione, aggiornamenti e programmazione reparti.',
     steps: [
       {
@@ -721,6 +748,8 @@ const PRINTERS = [
     id: '3i-verifica',
     name: 'Verifica periodica RT 30 / RT 40',
     brand: '3i',
+    category: 'Verifica periodica',
+    menu: '3i RT 30 / RT 40',
     summary: 'Chiusura, corrispettivi, connessione, scontrini di prova con annullo e registrazione intervento.',
     needs: ['C.F. del tecnico e P.IVA di S.C.'],
     steps: [
@@ -805,6 +834,8 @@ const PRINTERS = [
     id: '3i-dgfe',
     name: 'Sostituzione DGFE RT 30 / RT 40',
     brand: '3i',
+    category: 'Sostituzione DGFE',
+    menu: '3i RT 30 / RT 40',
     summary: 'Chiusura, sostituzione fisica della DGFE, inizializzazione e report di verifica.',
     needs: ['DGFE nuova', 'Piombo'],
     steps: [
@@ -873,6 +904,8 @@ const PRINTERS = [
     id: 'emotiq-attivazione',
     name: 'Attivazione Nota 2',
     brand: 'Emotiq',
+    category: 'Preparazione',
+    menu: 'Emotiq Nota 2',
     summary: 'Connessione Wi-Fi, test di rete, configurazione con Emotiq Tools, verifica IVA e QR code.',
     needs: [
       'PC con Emotiq Tools',
@@ -983,6 +1016,8 @@ const PRINTERS = [
     id: 'emotiq-verifica',
     name: 'Verifica periodica Nota / Model M / Opera 57',
     brand: 'Emotiq',
+    category: 'Verifica periodica',
+    menu: 'Emotiq Nota / Model M / Opera 57',
     summary: 'QR code, chiusura, test di rete, scontrini di prova con annullo, registrazione della verifica e check-list.',
     needs: ['C.F. del tecnico e P.IVA del laboratorio', 'Check-list della verifica'],
     legend: EMOTIQ_LEGEND,
@@ -1100,6 +1135,8 @@ const PRINTERS = [
     id: 'emotiq-dgfe',
     name: 'Estensione DGFE Emotiq',
     brand: 'Emotiq',
+    category: 'Sostituzione DGFE',
+    menu: 'Emotiq (estensione)',
     summary: 'Estensione della DGFE dall\'app, scaricamento con la chiusura e controllo finale.',
     needs: ['Telefono con l\'app / portale EmotiqMe', 'Matricola della macchina'],
     legend: EMOTIQ_LEGEND,
@@ -1155,6 +1192,8 @@ const PRINTERS = [
     id: 'emotiq-annullo',
     name: 'Annullo scontrino Emotiq',
     brand: 'Emotiq',
+    category: 'Annullo scontrino',
+    menu: 'Emotiq',
     summary: 'Annullamento di uno scontrino, con ristampa se il cliente non ha lo scontrino.',
     legend: EMOTIQ_LEGEND,
     steps: [
@@ -1187,6 +1226,8 @@ const PRINTERS = [
     id: 'emotiq-ripristino',
     name: 'Ripristino Opera',
     brand: 'Emotiq',
+    category: 'Assistenza',
+    menu: 'Emotiq · Ripristino Opera',
     summary: 'Reimpostazione di data, ora e dati fiscali dopo un reset della cassa.',
     needs: ['C.F. e P.IVA del cliente'],
     legend: EMOTIQ_LEGEND,
@@ -1231,6 +1272,8 @@ const PRINTERS = [
     id: 'emotiq-non-invia',
     name: 'Opera non invia',
     brand: 'Emotiq',
+    category: 'Assistenza',
+    menu: 'Emotiq · Opera non invia',
     summary: 'Controllo della rete, ricollegamento e invio dei corrispettivi sospesi.',
     needs: ['Nome (SSID) e password della rete del cliente'],
     legend: EMOTIQ_LEGEND,
@@ -1290,6 +1333,8 @@ const PRINTERS = [
     id: 'emotiq-disattivazione',
     name: 'Disattivazione Emotiq',
     brand: 'Emotiq',
+    category: 'Altre procedure',
+    menu: 'Emotiq · Disattivazione',
     summary: 'Chiusura e disattivazione della cassa.',
     needs: ['C.F. del tecnico e P.IVA del laboratorio'],
     legend: EMOTIQ_LEGEND,
@@ -1321,6 +1366,8 @@ const PRINTERS = [
     id: 'epson-annullo',
     name: 'Annullo scontrino Epson',
     brand: 'Epson',
+    category: 'Annullo scontrino',
+    menu: 'Epson',
     summary: 'Annullamento di uno scontrino.',
     steps: [
       {
@@ -1349,6 +1396,8 @@ const PRINTERS = [
     id: 'rch-tasto',
     name: 'Programmazione nuovo tasto RCH Print F',
     brand: 'RCH',
+    category: 'Altre procedure',
+    menu: 'RCH Print F · Nuovo tasto',
     summary: 'Assegnazione di una funzione a un tasto.',
     steps: [
       {
