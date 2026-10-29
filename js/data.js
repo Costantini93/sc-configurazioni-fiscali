@@ -338,3 +338,182 @@ const PRINTERS = [
     ]
   }
 ];
+
+/*
+ * Funzioni della Custom (stampate dalla cassa: liste X00, P000 e Z00).
+ * Ogni gruppo ha un titolo e l'elenco [codice, descrizione].
+ */
+
+const CUSTOM_FUNCTIONS = [
+  {
+    id: 'x',
+    name: 'Report X',
+    note: 'Letture: non azzerano i totali.',
+    groups: [
+      { title: 'Visualizzazioni', items: [
+        ['X05', 'NETTO FISCALE'],
+        ['X06', 'TOTALE CASSETTO']
+      ] },
+      { title: 'Rapporti', items: [
+        ['X01', 'INFORMAZIONI ECR'],
+        ['X03', 'INFORMAZIONI ECR EXT'],
+        ['X10', 'FINANZIARIO GENERALE'],
+        ['X20', 'REPARTI GIORNO'],
+        ['X21', 'REPARTI PERIODO'],
+        ['X22', 'GRUPPI REP. GIORNO'],
+        ['X23', 'GRUPPI REP. PERIODO'],
+        ['X24', 'REPARTO SPECIFICO'],
+        ['X30', 'PLU GIORNO'],
+        ['X31', 'PLU PERIODO'],
+        ['X41', 'ATTIVITÀ ORARIA'],
+        ['X50', 'IVA GIORNO'],
+        ['X51', 'IVA PERIODO'],
+        ['X60', 'GENERALE CLIENTI'],
+        ['X61', 'CLIENTE SPECIFICO'],
+        ['X62', 'PAGAMENTI PERIODO'],
+        ['X65', 'PDF ONLINE INFO'],
+        ['X66', 'PDF ONLINE READ'],
+        ['X68', 'VALUTE GIORNO'],
+        ['X69', 'M.DETT. REC.LOTTERIA'],
+        ['X70', 'LETT.M.DETT. SMART'],
+        ['X73', 'LETT.M.DETT. DEMO MODE'],
+        ['X74', 'M.DETT. CHIUSURE PER NUMERO'],
+        ['X75', 'M.DETT. CHIUSURE PER DATA'],
+        ['X76', 'M.DETT. NCHI->NSCO'],
+        ['X77', 'M.DETT. ULTIMO SCONTR.'],
+        ['X78', 'LETT.GLOB. M.DETT. DATA'],
+        ['X79', 'M.DETT. Z IN CORSO'],
+        ['X80', 'LETT.TOTALE M.DETT.'],
+        ['X81', 'LETT.M.DETT. DATA'],
+        ['X82', 'M.DETT. DATA->NSCO'],
+        ['X83', 'LETT.INFO.M.DETT.'],
+        ['X86', 'LETT.M.DETT. DATA NOF'],
+        ['X87', 'M.DETT. DATA->NSCO NOF'],
+        ['X88', 'LETT.M.DETT. DATA NOTAC'],
+        ['X89', 'M.DETT. DATA->NSCO NOTA'],
+        ['X90', 'GENERALE OPERATORI'],
+        ['X91', 'OPERATORE SPECIFICO'],
+        ['X92', 'OPERATORE ATTIVO'],
+        ['X93', 'M.RIEP. INT.TECNICI'],
+        ['X94', 'M.RIEP. VERIF. PER.'],
+        ['X95', 'M.RIEP. UPGRADE FW.'],
+        ['X96', 'M.RIEP. TRA NUMERI'],
+        ['X97', 'M.RIEP. TRA DATE'],
+        ['X98', 'M.RIEP. SOMMA TRA DATE'],
+        ['X99', 'M.RIEP. SOMMA TRA NUMERI']
+      ] }
+    ]
+  },
+  {
+    id: 'p',
+    name: 'Programmazioni',
+    seq: [{ key: true }, { k: 'PROGRAMMAZIONE' }, { n: 'codice' }, { k: 'SUBTOT' }],
+    groups: [
+      { title: 'Generali', items: [
+        ['001', 'LISTA PROG. OPZ.GEN.'],
+        ['002', 'LISTA CONFIG. TAST.'],
+        ['003', 'LISTA ICONE DISPON.'],
+        ['010', 'ORA'],
+        ['011', 'DATA'],
+        ['013', 'NUMERO CASSA'],
+        ['014', 'DISPOSIZIONE TASTI'],
+        ['015', 'CONFIGURA TASTIERA'],
+        ['016', 'TABELLA ALIQUOTE IVA'],
+        ['018', 'PARAMETRI STAMPANTE'],
+        ['019', 'CONFIGURAZ.GENERALI'],
+        ['020', 'CONFIGURAZ.SCONTRINO'],
+        ['021', 'INTEST. SCONTRINO'],
+        ['023', 'MESS. FINE SCONTRINO'],
+        ['024', 'CODICE ICONA PERIODO'],
+        ['028', 'CANCELLAZIONE ICONE'],
+        ['040', 'PROG. CODICI ATECO'],
+        ['041', 'MULTISCONTRINO'],
+        ['042', 'RAPP.GEST.AUTOMATICI'],
+        ['060', 'ELENCO FUNZ.MULTIPLE'],
+        ['061', 'CREAZ. FUNZ.MULTIPLA'],
+        ['062', 'CANC. FUNZ.MULTIPLE'],
+        ['070', 'FATTURE']
+      ] },
+      { title: 'Reparti e PLU', items: [
+        ['100', 'LISTA PROG. REPARTI'],
+        ['110', 'CONFIG.GLOBALE REP.'],
+        ['120', 'PROG. REPARTI'],
+        ['131', 'DESC. GRUPPI REPARTI'],
+        ['133', 'DESC. GRUPPI STAMPA'],
+        ['200', 'LISTA PROG. PLU'],
+        ['201', 'ELENCO PLU'],
+        ['220', 'CREAZ. PLU'],
+        ['221', 'PLU DIRETTI'],
+        ['290', 'CANC. PARZ. PLU'],
+        ['291', 'CANC.TOT.ARC.PLU']
+      ] },
+      { title: 'Operatori e clienti', items: [
+        ['300', 'LISTA PROG.OPERATORI'],
+        ['302', 'ELENCO CLIENTI'],
+        ['310', 'ABIL. GEST.OPERATORI'],
+        ['312', 'CONFIG.GEST.CLIENTI'],
+        ['314', 'LOTTERIA'],
+        ['320', 'COD/SIGLA ACCESSO OP'],
+        ['323', 'CANCELLA OPERATORI'],
+        ['340', 'DATI CLIENTE'],
+        ['390', 'CANC. PARZ. CLIENTI'],
+        ['391', 'CANC. TOTALE CLIENTI']
+      ] },
+      { title: 'Sconti, cassa e pagamenti', items: [
+        ['400', 'LISTA PROG.SCO/MAGG.'],
+        ['410', 'SCONTO SU SUBTOTALE'],
+        ['420', 'PROGR. SCO/MAGG'],
+        ['500', 'LISTA PROG.OP.CASSA'],
+        ['501', 'MSG. DISPLAY CLIENTE'],
+        ['510', 'ABIL.GEST.FONDOCASSA'],
+        ['519', 'CONFIG.OPERAZ.CASSA'],
+        ['520', 'MODAL.PAGAMENTO'],
+        ['530', 'RAPPORTO CAMBIO VAL.'],
+        ['550', 'DIGITA PASSWORD UTEN'],
+        ['551', 'CAMBIO PASSWORD UTEN']
+      ] },
+      { title: 'Tecnico e fiscale', items: [
+        ['601', 'SCADENZA ASS.TECNICA'],
+        ['609', 'GLOBAL TEST'],
+        ['612', 'TEST STAMPANTE'],
+        ['623', 'CHECK DISKS'],
+        ['647', 'PROFILO USBDEVICE'],
+        ['668', 'ZINT TEST'],
+        ['669', 'TEST MECC. STAMPA'],
+        ['690', 'FISCALIZZAZIONE'],
+        ['691', 'SERIALIZZAZIONE'],
+        ['692', 'FORMATTAZIONE MMC'],
+        ['693', 'INIZIALIZZA M.DETT.'],
+        ['698', 'VERIFICA CONNESSIONI'],
+        ['699', 'SERVIZI TELEMATICI']
+      ] },
+      { title: 'Comunicazione', items: [
+        ['900', 'LISTA PROG. COMUNIC.'],
+        ['902', 'PROG. SLOT SERIALI'],
+        ['910', 'PARAMETRI COMUNICAZ.'],
+        ['911', 'ETHERNET'],
+        ['912', 'WI-FI'],
+        ['913', 'BLUETOOTH'],
+        ['916', 'WEBSERVER'],
+        ['917', 'CUSTOM PAY']
+      ] }
+    ]
+  },
+  {
+    id: 'z',
+    name: 'Azzeramenti Z',
+    note: 'Azzerano i totali: usali solo quando serve.',
+    groups: [
+      { title: 'Azzeramenti', items: [
+        ['Z01', 'CHIUSURA FISCALE'],
+        ['Z20', 'REPARTI PERIODO'],
+        ['Z21', 'PLU PERIODO'],
+        ['Z41', 'ATTIVITÀ ORARIA'],
+        ['Z51', 'IVA PERIODO'],
+        ['Z60', 'TOTALIZZ. CLIENTI'],
+        ['Z61', 'MODALITÀ PAGAMENTO'],
+        ['Z92', 'TOTALIZZ. OPERATORE']
+      ] }
+    ]
+  }
+];

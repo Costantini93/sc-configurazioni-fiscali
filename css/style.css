@@ -61,6 +61,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; }
 body {
   background: var(--bg);
@@ -199,6 +200,43 @@ h1, h2 { margin: 0; line-height: 1.25; }
   padding: 3px 8px; border-radius: 999px;
   background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line);
 }
+
+.list-title {
+  margin: 12px 4px -2px;
+  font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 700;
+}
+
+/* ---------- Funzioni Custom ---------- */
+
+.fn-title { font-size: 26px; margin-top: 4px; }
+.fn-search {
+  position: sticky; top: 64px; z-index: 4;
+  display: flex; align-items: center; gap: 10px;
+  margin: 16px 0 12px; padding: 0 14px; height: 52px;
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: 12px;
+  color: var(--muted); font-size: 20px;
+}
+.fn-search:focus-within { border-color: var(--accent); }
+.fn-search input {
+  flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: none;
+  color: var(--ink); font: inherit; font-size: 17px;
+}
+.fn-count { font-weight: 600; }
+.fn-howto .seq { padding: 12px; }
+.fn-note { margin: 0 0 4px; font-size: 14px; color: var(--muted); }
+.fn-howto + .fn-note { margin-top: 10px; }
+.fn-group { margin-top: 14px; }
+.fn-group-name { font-size: 13px; font-weight: 700; color: var(--brand-2); margin-bottom: 4px; }
+@media (prefers-color-scheme: dark) { .fn-group-name { color: var(--accent); } }
+.fn-list { list-style: none; margin: 0; padding: 0; }
+.fn-list li { display: flex; align-items: baseline; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 15px; font-weight: 550; }
+.fn-list li:first-child { border-top: 0; }
+.fn-code {
+  flex: none; min-width: 48px; padding: 2px 6px; border-radius: 6px; text-align: center;
+  background: var(--surface-2); border: 1px solid var(--line);
+  font: 700 14px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+.fn-empty { text-align: center; margin-top: 24px; }
 
 /* ---------- Panoramica ---------- */
 

@@ -17,6 +17,7 @@
     printer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/><path d="M17 12h.01"/></svg>',
     pc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
     web: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
+    search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>',
     restart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>'
   };
 
@@ -169,8 +170,73 @@
         '<h1>Quale stampante vuoi configurare?</h1>' +
         '<p class="lead">Segui la procedura passo per passo. Conferma ogni step con la V verde.</p>' +
       '</header>' +
-      '<main class="printer-list">' + cards + '</main>' +
+      '<main class="printer-list">' + cards +
+        '<div class="list-title">Consultazione</div>' +
+        '<a class="printer-card" href="#/funzioni">' +
+          '<span class="printer-icon">' + ICON.list + '</span>' +
+          '<span class="printer-body">' +
+            '<span class="printer-name">Funzioni Custom</span>' +
+            '<span class="printer-meta">Codici report X, programmazioni e azzeramenti Z</span>' +
+          '</span>' +
+          '<span class="printer-go">' + ICON.arrow + '</span>' +
+        '</a>' +
+      '</main>' +
     '</div>';
+  }
+
+  function viewFunctions() {
+    var sections = CUSTOM_FUNCTIONS.map(function (sec) {
+      var count = 0;
+      var groups = sec.groups.map(function (g) {
+        count += g.items.length;
+        return '<div class="fn-group"><div class="fn-group-name">' + esc(g.title) + '</div><ul class="fn-list">' +
+          g.items.map(function (it) {
+            return '<li data-search="' + esc((it[0] + ' ' + it[1]).toLowerCase()) + '">' +
+              '<span class="fn-code">' + esc(it[0]) + '</span><span>' + esc(it[1]) + '</span></li>';
+          }).join('') + '</ul></div>';
+      }).join('');
+      return '<section class="panel fn-section">' +
+        '<h2>' + esc(sec.name) + ' <span class="fn-count">· ' + count + '</span></h2>' +
+        (sec.seq ? '<div class="fn-howto">' + renderSeq(sec.seq) + '</div>' : '') +
+        (sec.note ? '<p class="fn-note">' + esc(sec.note) + '</p>' : '') +
+        groups +
+      '</section>';
+    }).join('');
+
+    return '<div class="screen functions">' +
+      topbar('<a class="icon-btn" href="#/" aria-label="Torna alla home">' + ICON.back + '</a>') +
+      '<main class="content">' +
+        '<h1 class="fn-title">Funzioni Custom</h1>' +
+        '<p class="muted">Elenco dei codici disponibili sulla cassa Custom.</p>' +
+        '<label class="fn-search">' + ICON.search +
+          '<input type="search" data-filter placeholder="Cerca codice o funzione" autocomplete="off" aria-label="Cerca codice o funzione">' +
+        '</label>' +
+        sections +
+        '<p class="fn-empty muted" hidden>Nessuna funzione trovata.</p>' +
+      '</main>' +
+    '</div>';
+  }
+
+  // Filtra l'elenco senza ridisegnare la pagina (il campo di ricerca mantiene il focus)
+  function filterFunctions(q) {
+    q = q.trim().toLowerCase();
+    var any = false;
+    app.querySelectorAll('.fn-section').forEach(function (sec) {
+      var secHits = 0;
+      sec.querySelectorAll('.fn-group').forEach(function (g) {
+        var hits = 0;
+        g.querySelectorAll('li').forEach(function (li) {
+          var ok = !q || li.getAttribute('data-search').indexOf(q) !== -1;
+          li.hidden = !ok;
+          if (ok) hits++;
+        });
+        g.hidden = !hits;
+        secHits += hits;
+      });
+      sec.hidden = !secHits;
+      if (secHits) any = true;
+    });
+    app.querySelector('.fn-empty').hidden = any;
   }
 
   function viewOverview(p) {
@@ -313,6 +379,7 @@
     }
 
     lastStep = { id: null, i: -1 };
+    if (parts[0] === 'funzioni') return render(viewFunctions());
     render(viewHome());
   }
 
@@ -391,6 +458,7 @@
   });
 
   app.addEventListener('input', function (e) {
+    if (e.target.hasAttribute && e.target.hasAttribute('data-filter')) return filterFunctions(e.target.value);
     var key = e.target.getAttribute && e.target.getAttribute('data-var');
     var p = currentPrinter();
     if (!key || !p) return;
