@@ -25,7 +25,8 @@
     printer: { label: 'Sulla stampante', icon: ICON.printer },
     pc: { label: 'Sul PC · RX Config', icon: ICON.pc },
     web: { label: 'Sul portale web', icon: ICON.web },
-    react: { label: 'Sul PC · React app', icon: ICON.pc }
+    react: { label: 'Sul PC · React app', icon: ICON.pc },
+    emotiq: { label: 'Sul PC · Emotiq Tools', icon: ICON.pc }
   };
 
   // ---------- Stato persistente ----------
@@ -153,25 +154,36 @@
   // ---------- Schermate ----------
 
   function viewHome() {
-    var cards = PRINTERS.map(function (p) {
+    // Raggruppa per marca, nell'ordine in cui le marche compaiono in data.js
+    var brands = [];
+    PRINTERS.forEach(function (p) {
+      var last = brands.filter(function (b) { return b.name === p.brand; })[0];
+      if (last) last.items.push(p);
+      else brands.push({ name: p.brand, items: [p] });
+    });
+    function card(p) {
       var pr = progressOf(p.id);
+      var nPhases = phasesOf(p).length;
       var badge = pr ? '<span class="badge">In corso · step ' + (pr.step + 1) + ' di ' + p.steps.length + '</span>' : '';
       return '<a class="printer-card" href="#/p/' + p.id + '">' +
         '<span class="printer-icon">' + ICON.printer + '</span>' +
         '<span class="printer-body">' +
           '<span class="printer-name">' + esc(p.name) + '</span>' +
-          '<span class="printer-meta">' + p.steps.length + ' step · ' + phasesOf(p).length + ' fasi</span>' +
+          '<span class="printer-meta">' + p.steps.length + ' step · ' + nPhases + (nPhases === 1 ? ' fase' : ' fasi') + '</span>' +
           badge +
         '</span>' +
         '<span class="printer-go">' + ICON.arrow + '</span>' +
       '</a>';
+    }
+    var cards = brands.map(function (b) {
+      return '<div class="list-title">' + esc(b.name) + '</div>' + b.items.map(card).join('');
     }).join('');
 
     return '<div class="screen home">' +
       topbar() +
       '<header class="hero">' +
         '<div class="brand-name">Configurazioni fiscali</div>' +
-        '<h1>Quale stampante vuoi configurare?</h1>' +
+        '<h1>Quale procedura vuoi seguire?</h1>' +
         '<p class="lead">Segui la procedura passo per passo. Conferma ogni step con la V verde.</p>' +
       '</header>' +
       '<main class="printer-list">' + cards +
@@ -258,27 +270,27 @@
       return '<li><span class="phase-num">' + (i + 1) + '</span><span class="phase-name">' + esc(ph.name) + '</span>' +
         '<span class="phase-count">' + ph.steps.length + (ph.steps.length === 1 ? ' step' : ' step') + '</span></li>';
     }).join('');
-    var legend = p.legend.map(function (l) {
+    var legend = (p.legend || []).map(function (l) {
       return '<li>' + renderToken(l.tok) + '<span>' + esc(l.text) + '</span></li>';
     }).join('');
-    var needs = p.needs.map(function (n) {
+    var needs = (p.needs || []).map(function (n) {
       return '<li><span class="dot">' + ICON.check + '</span><span>' + esc(n) + '</span></li>';
     }).join('');
 
     var actions = pr
       ? '<button class="btn btn-primary btn-block" data-action="resume">Riprendi da step ' + (pr.step + 1) + '</button>' +
         '<button class="btn btn-ghost btn-block" data-action="restart">' + ICON.restart + 'Ricomincia da capo</button>'
-      : '<button class="btn btn-primary btn-block" data-action="start">Inizia la configurazione</button>';
+      : '<button class="btn btn-primary btn-block" data-action="start">Inizia la procedura</button>';
 
     return '<div class="screen overview">' +
-      topbar('<a class="icon-btn" href="#/" aria-label="Torna alla scelta stampante">' + ICON.back + '</a>') +
+      topbar('<a class="icon-btn" href="#/" aria-label="Torna alle procedure">' + ICON.back + '</a>') +
       '<main class="content">' +
         '<div class="overview-head">' +
           '<span class="printer-icon lg">' + ICON.printer + '</span>' +
           '<div><h1>' + esc(p.name) + '</h1><p class="muted">' + esc(p.summary) + '</p></div>' +
         '</div>' +
-        '<section class="panel"><h2>Cosa ti serve</h2><ul class="checklist">' + needs + '</ul></section>' +
-        '<section class="panel"><h2>Legenda tasti</h2><ul class="legend">' + legend + '</ul></section>' +
+        (needs ? '<section class="panel"><h2>Cosa ti serve</h2><ul class="checklist">' + needs + '</ul></section>' : '') +
+        (legend ? '<section class="panel"><h2>Legenda tasti</h2><ul class="legend">' + legend + '</ul></section>' : '') +
         '<section class="panel"><h2>Fasi della procedura</h2><ol class="phases">' + phases + '</ol></section>' +
       '</main>' +
       '<footer class="actionbar stack">' + actions + '</footer>' +
@@ -347,13 +359,13 @@
       topbar() +
       '<main class="content center">' +
         '<div class="done-badge">' + ICON.check + '</div>' +
-        '<h1>Configurazione completata</h1>' +
+        '<h1>Procedura completata</h1>' +
         '<p class="muted">' + esc(p.name) + (result ? ' · ' + when + ' · ' + formatDuration(result.finishedAt - result.startedAt) : '') + '</p>' +
         (result && result.vars && result.vars.ip ? '<p class="done-ip">IP stampante: <strong>' + esc(result.vars.ip) + '</strong></p>' : '') +
         '<section class="panel left"><h2>Fasi completate</h2><ul class="checklist done-list">' + phases + '</ul></section>' +
       '</main>' +
       '<footer class="actionbar stack">' +
-        '<a class="btn btn-primary btn-block" href="#/">Configura un\'altra stampante</a>' +
+        '<a class="btn btn-primary btn-block" href="#/">Torna alle procedure</a>' +
       '</footer>' +
     '</div>';
   }
@@ -456,7 +468,7 @@
       case 'resume':
         go('#/p/' + p.id + '/step/' + progressOf(p.id).step); break;
       case 'restart':
-        if (confirm('Vuoi ricominciare la configurazione di ' + p.name + ' dal primo step?')) {
+        if (confirm('Vuoi ricominciare ' + p.name + ' dal primo step?')) {
           clearProgress(p.id); ensureProgress(p.id); saveStore();
           go('#/p/' + p.id + '/step/0');
         }

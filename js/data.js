@@ -1,12 +1,14 @@
 /*
  * Guide di configurazione delle stampanti fiscali.
  *
- * Per aggiungere una stampante basta aggiungere un oggetto all'array PRINTERS.
+ * Per aggiungere una procedura basta aggiungere un oggetto all'array PRINTERS.
+ * In home le procedure sono raggruppate per marca (brand), nell'ordine in cui compaiono qui.
+ * needs (cosa serve) e legend (legenda tasti) sono facoltativi.
  *
  * Ogni step ha:
  *   phase   nome della fase (gli step consecutivi con la stessa fase vengono raggruppati)
  *   title   titolo dello step
- *   where   dove si opera: 'printer' | 'pc' | 'web' | 'react'
+ *   where   dove si opera: 'printer' | 'pc' | 'web' | 'react' | 'emotiq'
  *   intro   (facoltativo) frase introduttiva
  *   blocks  contenuto dello step:
  *     { type: 'seq',   label?, seq: [token, ...] }      sequenza di tasti
@@ -28,7 +30,7 @@
 const PRINTERS = [
   {
     id: 'custom-big',
-    name: 'Custom Big',
+    name: 'Configurazione Custom Big',
     brand: 'Custom',
     summary: 'Fiscalizzazione, censimento, attivazione, configurazione con RX Config e verifica finale.',
     needs: [
@@ -229,12 +231,13 @@ const PRINTERS = [
 
   {
     id: 'smart',
-    name: 'Smart',
-    brand: 'Smart',
+    name: 'Preparazione Smart RT',
+    brand: 'Labware',
     summary: 'Data e ora, censimento, aggiornamenti, configurazione con la React app e verifica finale.',
     needs: [
       'Stampante accesa e collegata alla rete',
-      'PC con la React app'
+      'PC con la React app',
+      'Codice rivenditore: 981602'
     ],
     legend: [
       { tok: { key: true }, text: 'Tasto chiave' },
@@ -292,6 +295,7 @@ const PRINTERS = [
         where: 'react',
         blocks: [
           { type: 'seq', seq: [{ m: 'Modelli' }, { m: 'Nuovo modello' }] },
+          { type: 'list', items: ['Imposta reparti, IVA e intestazione. Nell\'ultima stringa inserisci POS.'] },
           { type: 'note', kind: 'info', text: 'Annota il numero che appare nella React app: serve nel prossimo step.' },
           { type: 'input', var: 'modello', label: 'Numero mostrato dalla React app', placeholder: 'es. 12' }
         ]
@@ -305,6 +309,14 @@ const PRINTERS = [
             { key: true }, { n: '9626' }, { key: true }, { n: '47' },
             { v: 'modello', cap: 'numero della React app', empty: 'numero non annotato' }, { k: 'ANNULLO' }
           ] }
+        ]
+      },
+      {
+        phase: 'Configurazione',
+        title: 'Attivazione',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Per l\'attivazione seleziona OK.'] }
         ]
       },
       {
@@ -333,6 +345,816 @@ const PRINTERS = [
         where: 'printer',
         blocks: [
           { type: 'seq', seq: [{ key: true }, { n: '9626' }, { key: true }, { n: '20' }, { k: 'CONTANTI' }] }
+        ]
+      },
+      {
+        phase: 'Consegna',
+        title: 'Tastini e QR code',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: [
+            'Crea i tastini con i reparti indicati dal cliente.',
+            'Chiama il commercialista del cliente per il QR code. Quando arriva, leggilo con la pistola, stampalo e attaccalo sulla macchina.'
+          ] }
+        ]
+      },
+      {
+        phase: 'Consegna',
+        title: 'Scontrini per la check-list',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Fai 3 scontrini: 2 attaccali alla check-list e 1 lascialo attaccato alla macchina.'] }
+        ]
+      }
+    ]
+  },
+
+  // ---------- Custom ----------
+
+  {
+    id: 'custom-verifica',
+    name: 'Verifica periodica Custom',
+    brand: 'Custom',
+    summary: 'QR code, chiusura, aggiornamento firmware, scontrini di prova con annullo, registrazione intervento.',
+    steps: [
+      {
+        phase: 'QR code',
+        title: 'Controllo QR code',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Controlla il QR code della macchina.'] }
+        ]
+      },
+      {
+        phase: 'Chiusura',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { key: true }, { k: 'TOTALE' }] }
+        ]
+      },
+      {
+        phase: 'Firmware',
+        title: 'Lancia l\'aggiornamento',
+        where: 'web',
+        blocks: [
+          { type: 'list', items: ['Collegati al sito Custom e lancia l\'aggiornamento del firmware.'] }
+        ]
+      },
+      {
+        phase: 'Firmware',
+        title: 'Aggiorna la stampante',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { k: 'PROGRAMMAZIONE' }, { n: '698' }, { k: 'SUBTOT' }] },
+          { type: 'note', kind: 'tip', text: 'Non spegnere la stampante durante l\'aggiornamento.' }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Scontrini di prova',
+        where: 'printer',
+        intro: 'Emetti due scontrini:',
+        blocks: [
+          { type: 'table', head: ['Scontrino', 'Importo', 'Pagamento'], rows: [
+            ['1', '1,39 €', 'Contanti'],
+            ['2', '1,25 €', 'Elettronico, con lotteria']
+          ] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Annulla gli scontrini',
+        where: 'printer',
+        intro: 'Annulla entrambi gli scontrini, uno alla volta.',
+        blocks: [
+          { type: 'seq', seq: [
+            { k: 'SHIFT' }, { k: 'VAT', x: 3 }, { t: 'dati richiesti' }, { k: 'VAT' }, { k: 'TOTALE' }
+          ] },
+          { type: 'note', kind: 'info', text: 'Ripeti la sequenza per il secondo scontrino.' }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { key: true }, { k: 'TOTALE' }] }
+        ]
+      },
+      {
+        phase: 'Intervento',
+        title: 'Registra l\'intervento tecnico',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { k: 'PROGRAMMAZIONE' }, { n: '699' }, { k: 'SUBTOT' }, { m: 'REGISTRAZIONE INT. TECNICO' }] },
+          { type: 'note', kind: 'info', text: 'Al termine premi 3 volte KEY e lascia la cassa in REG.' }
+        ]
+      },
+      {
+        phase: 'Intervento',
+        title: 'Verifica QR code',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Controlla di nuovo il QR code.'] }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'custom-registrazione',
+    name: 'Registrazione intervento Custom',
+    brand: 'Custom',
+    summary: 'Chiusura e registrazione dell\'intervento tecnico.',
+    steps: [
+      {
+        phase: 'Chiusura',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { key: true }, { k: 'SUBTOT' }] }
+        ]
+      },
+      {
+        phase: 'Registrazione',
+        title: 'Registrazione intervento tecnico',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { k: 'PROGRAMMAZIONE' }, { n: '699' }, { k: 'SUBTOT' }, { m: 'REGISTRAZIONE INT. TECNICO' }] }
+        ]
+      },
+      {
+        phase: 'Registrazione',
+        title: 'Torna in REG',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true, x: 3 }] },
+          { type: 'note', kind: 'info', text: 'Al termine lascia la cassa in REG.' }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'custom-annullo',
+    name: 'Annullo scontrino Custom',
+    brand: 'Custom',
+    summary: 'Annullamento di uno scontrino.',
+    steps: [
+      {
+        phase: 'Annullo',
+        title: 'Annulla lo scontrino',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [
+            { k: 'SHIFT' }, { k: 'VAT', x: 3 }, { t: 'dati richiesti' }, { k: 'VAT' }, { k: 'TOTALE' }
+          ] }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'custom-k3',
+    name: 'Tastierino K3',
+    brand: 'Custom',
+    summary: 'Passaggio da FPU a LOCAL e stampa dell\'elenco delle programmazioni.',
+    steps: [
+      {
+        phase: 'Modalità',
+        title: 'Da FPU a LOCAL',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '222' }, { key: true }] },
+          { type: 'table', head: ['Modalità', 'Significato'], rows: [
+            ['FPU', 'Lavora da PC'],
+            ['LOCAL', 'Lavora in manuale']
+          ] },
+          { type: 'note', kind: 'warn', text: 'Queste impostazioni valgono solo per le Custom di 3ª generazione.' }
+        ]
+      },
+      {
+        phase: 'Programmazioni',
+        title: 'Stampa l\'elenco delle programmazioni',
+        where: 'printer',
+        intro: 'Porta la chiave fino a REG, in lettura.',
+        blocks: [
+          { type: 'seq', seq: [{ n: '0' }, { k: 'SUBTOT' }] },
+          { type: 'note', kind: 'info', text: 'Stampa l\'elenco di tutto quello che si può fare in programmazione.' }
+        ]
+      }
+    ]
+  },
+
+  // ---------- Labware ----------
+
+  {
+    id: 'labware-dgfe',
+    name: 'Sostituzione DGFE Smart RT',
+    brand: 'Labware',
+    summary: 'Chiusura, sostituzione fisica della DGFE, inizializzazione, registrazione intervento e verifica.',
+    needs: [
+      'DGFE nuova',
+      'Piombo',
+      'C.F. del tecnico e P.IVA di S.C.'
+    ],
+    steps: [
+      {
+        phase: 'Preparazione',
+        title: 'Leggi il QR code',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Leggi il QR code della macchina.'] }
+        ]
+      },
+      {
+        phase: 'Preparazione',
+        title: 'Chiusura fiscale',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { k: 'CHIUSURA' }] }
+        ]
+      },
+      {
+        phase: 'Sostituzione',
+        title: 'Spegni la macchina',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Spegni la macchina e togli il cavo della corrente.'] }
+        ]
+      },
+      {
+        phase: 'Sostituzione',
+        title: 'Apri la macchina',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: [
+            'Togli le 2 viti sotto la tastiera.',
+            'Sfila la tastiera, togli il piombo e svita la vite.',
+            'Sfila verso il basso la cover nera.'
+          ] }
+        ]
+      },
+      {
+        phase: 'Sostituzione',
+        title: 'Sostituisci la DGFE',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: [
+            'Sfila la DGFE esausta e inserisci la nuova.',
+            'Chiudi la cover nera.',
+            'Accendi la macchina.'
+          ] }
+        ]
+      },
+      {
+        phase: 'Inizializzazione',
+        title: 'Inizializza la DGFE',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '18' }, { k: 'ANNULLO' }] }
+        ]
+      },
+      {
+        phase: 'Inizializzazione',
+        title: 'Registra l\'intervento tecnico',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [
+            { key: true }, { n: '9626' }, { key: true }, { n: '24' },
+            { t: 'C.F. tecnico e P.IVA S.C.' }
+          ] }
+        ]
+      },
+      {
+        phase: 'Chiusura',
+        title: 'Rimonta la macchina',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Completa rimontando tutto e metti il piombo.'] }
+        ]
+      },
+      {
+        phase: 'Chiusura',
+        title: 'Verifica finale',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: [
+            'Fai il test a zero e la chiusura.',
+            'Leggi il QR code per la verifica.'
+          ] }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'labware-basic',
+    name: 'Labware Basic',
+    brand: 'Labware',
+    summary: 'Censimento, attivazione, aggiornamenti e programmazione reparti.',
+    steps: [
+      {
+        phase: 'Censimento',
+        title: 'Censimento',
+        where: 'printer',
+        intro: 'Seleziona la tastiera dal menu (le 3 linee).',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '50' }, { k: 'ANNULLO' }] }
+        ]
+      },
+      {
+        phase: 'Attivazione',
+        title: 'Attivazione',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '53' }, { k: 'ANNULLO' }] }
+        ]
+      },
+      {
+        phase: 'Aggiornamenti',
+        title: 'Aggiornamento parte fiscale',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '80' }] },
+          { type: 'note', kind: 'info', text: 'Al termine riavvia la macchina.' }
+        ]
+      },
+      {
+        phase: 'Aggiornamenti',
+        title: 'Aggiornamento software',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [
+            { m: 'Menu (3 linee)' }, { m: 'Impostazioni' }, { n: '1234', cap: 'per entrare' },
+            { m: 'Utilità' }, { m: 'Aggiornamento' }, { m: 'Software' }
+          ] },
+          { type: 'note', kind: 'tip', text: 'Prendi sempre la versione più in alto.' }
+        ]
+      },
+      {
+        phase: 'Reparti',
+        title: 'Programma i reparti',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Programma i reparti con prezzi e IVA corretti.'] }
+        ]
+      }
+    ]
+  },
+
+  // ---------- 3i ----------
+
+  {
+    id: '3i-verifica',
+    name: 'Verifica periodica RT 30 / RT 40',
+    brand: '3i',
+    summary: 'Chiusura, corrispettivi, connessione, scontrini di prova con annullo e registrazione intervento.',
+    needs: ['C.F. del tecnico e P.IVA di S.C.'],
+    steps: [
+      {
+        phase: 'Chiusura',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '21', cap: 'o 321' }, { k: 'TOTALE' }] }
+        ]
+      },
+      {
+        phase: 'Controlli',
+        title: 'Corrispettivi non trasmessi',
+        where: 'printer',
+        intro: 'Verifica che non ci siano corrispettivi non trasmessi all\'AdE.',
+        blocks: [
+          { type: 'seq', label: 'Se serve, forza l\'invio:', seq: [{ n: '3155' }, { k: 'FUNZIONE' }] }
+        ]
+      },
+      {
+        phase: 'Controlli',
+        title: 'Test connessione internet',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '5521' }, { k: 'FUNZIONE' }] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Scontrini di prova',
+        where: 'printer',
+        intro: 'Emetti due scontrini:',
+        blocks: [
+          { type: 'table', head: ['Scontrino', 'Importo', 'Pagamento'], rows: [
+            ['1', '1,39 €', 'Contanti'],
+            ['2', '1,25 €', 'Elettronico (eventualmente lotteria)']
+          ] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Annulla gli scontrini',
+        where: 'printer',
+        intro: 'Annulla entrambi gli scontrini, uno alla volta.',
+        blocks: [
+          { type: 'seq', seq: [
+            { n: '701' }, { k: 'FUNZIONE' }, { k: 'TOTALE', cap: 'conferma l\'avvio' },
+            { t: 'dati scontrino' }, { k: 'TOTALE' }, { k: 'TOTALE', cap: 'conferma lo scontrino' }
+          ] },
+          { type: 'note', kind: 'info', text: 'Il registratore stampa un documento commerciale emesso per annullamento, che storna l\'operazione ai fini fiscali e telematici. Ripeti per il secondo scontrino.' }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '21', cap: 'o 321' }, { k: 'TOTALE' }] }
+        ]
+      },
+      {
+        phase: 'Intervento',
+        title: 'Registra l\'intervento',
+        where: 'printer',
+        intro: 'Dallo stato di vendita:',
+        blocks: [
+          { type: 'seq', seq: [
+            { n: '4' }, { k: 'MENU', cap: 'o FUNZIONE, in base al firmware' },
+            { k: 'CARTA DI CREDITO' }, { k: 'TOTALE' }
+          ] },
+          { type: 'seq', label: 'Poi:', seq: [
+            { t: 'C.F. tecnico e P.IVA S.C.' }, { k: 'TOTALE' }, { k: 'SUBTOTALE' }, { k: 'TOTALE' }
+          ] },
+          { type: 'seq', label: 'Per tornare allo stato di vendita:', seq: [{ k: 'CREDITO/ESCI' }] }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: '3i-dgfe',
+    name: 'Sostituzione DGFE RT 30 / RT 40',
+    brand: '3i',
+    summary: 'Chiusura, sostituzione fisica della DGFE, inizializzazione e report di verifica.',
+    needs: ['DGFE nuova', 'Piombo'],
+    steps: [
+      {
+        phase: 'Chiusura',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '21' }, { k: 'TOTALE' }] }
+        ]
+      },
+      {
+        phase: 'Sostituzione',
+        title: 'Sostituisci la DGFE',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: [
+            'Togli il piombo e apri la cassa.',
+            'Sostituisci la DGFE.',
+            'Chiudi e accendi la macchina.'
+          ] }
+        ]
+      },
+      {
+        phase: 'Sostituzione',
+        title: 'Inizializzazione',
+        where: 'printer',
+        intro: 'La macchina dovrebbe riconoscere da sola la nuova DGFE e chiedere l\'inizializzazione. Segui le indicazioni sul display confermando con TOTALE.',
+        blocks: [
+          { type: 'table', head: ['Sul display', 'Cosa fare'], rows: [
+            ['DGFE blank', 'Premi C'],
+            ['Format', 'Premi SÌ'],
+            ['C.F. / P.IVA', 'Inserisci e conferma']
+          ] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Test connessione internet',
+        where: 'printer',
+        intro: 'Dallo stato di vendita:',
+        blocks: [
+          { type: 'seq', seq: [{ n: '5521' }, { k: 'FUNZIONE' }] },
+          { type: 'note', kind: 'info', text: 'Deve comparire la scritta INTERNET OK.' }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Report di verifica iniziale',
+        where: 'printer',
+        intro: 'Dallo stato di vendita:',
+        blocks: [
+          { type: 'seq', seq: [
+            { n: '2' }, { k: 'MENU' }, { k: 'TOTALE' },
+            { k: 'SUBTOTALE', cap: 'finché compare LETTURA DGFE' }, { m: 'LETTURA DGFE' }, { k: 'TOTALE' }
+          ] },
+          { type: 'list', items: ['Scegli la modalità (es. globale o per data) e stampa il report.'] }
+        ]
+      }
+    ]
+  },
+
+  // ---------- Emotiq ----------
+
+  {
+    id: 'emotiq-attivazione',
+    name: 'Attivazione Nota 2',
+    brand: 'Emotiq',
+    summary: 'Test connessione, configurazione con Emotiq Tools, verifica IVA e QR code.',
+    needs: [
+      'PC con Emotiq Tools',
+      'P.IVA e C.F. del cliente'
+    ],
+    steps: [
+      {
+        phase: 'Connessione',
+        title: 'Test connessione',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '685' }, { k: 'SUBTOTALE' }] }
+        ]
+      },
+      {
+        phase: 'Emotiq Tools',
+        title: 'Collegati alla stampante',
+        where: 'emotiq',
+        intro: 'Apri Emotiq Tools sul PC.',
+        blocks: [
+          { type: 'seq', seq: [{ m: 'File' }, { m: 'Configura porta' }, { m: 'Connetti' }, { m: 'Trasferisci' }] }
+        ]
+      },
+      {
+        phase: 'Emotiq Tools',
+        title: 'Fiscalizzazione',
+        where: 'emotiq',
+        blocks: [
+          { type: 'list', items: ['Inserisci P.IVA e C.F. del cliente.'] }
+        ]
+      },
+      {
+        phase: 'Emotiq Tools',
+        title: 'Intestazione',
+        where: 'emotiq',
+        blocks: [
+          { type: 'seq', seq: [{ m: 'Modifica' }, { m: 'Configura' }, { m: 'Intestazione' }] },
+          { type: 'note', kind: 'info', text: 'Logo: Modifica → Configura → Opzioni. Per cancellare il logo esistente dallo scontrino: Modifica → Configura grafica e porta il numero a 0.' }
+        ]
+      },
+      {
+        phase: 'Emotiq Tools',
+        title: 'Reparti',
+        where: 'emotiq',
+        blocks: [
+          { type: 'seq', seq: [{ m: 'Modifica' }, { m: 'Configura' }, { m: 'Reparti' }] },
+          { type: 'seq', label: 'Una volta modificati:', seq: [{ m: 'Invia selezionati' }] }
+        ]
+      },
+      {
+        phase: 'Emotiq Tools',
+        title: 'Trasferisci alla stampante',
+        where: 'emotiq',
+        blocks: [
+          { type: 'seq', seq: [{ m: 'Trasferisci' }, { m: 'Invia' }, { m: 'Reparti' }] },
+          { type: 'seq', seq: [{ m: 'Trasferisci' }, { m: 'Invia' }, { m: 'Intestazione' }] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Verifica IVA',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '1' }, { k: 'REP. 1', cap: 'poi 2, 3, 4…' }] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Info generale RT',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '808' }, { k: 'SUBTOTALE' }] }
+        ]
+      },
+      {
+        phase: 'Consegna',
+        title: 'Tastini e QR code',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: [
+            'Stampa i tastini per i reparti.',
+            'Contatta il commercialista del cliente per il QR code.'
+          ] }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'emotiq-verifica',
+    name: 'Verifica periodica Nota / Model M / Opera 57',
+    brand: 'Emotiq',
+    summary: 'QR code, chiusura, test Wi-Fi, scontrini di prova con annullo e registro intervento.',
+    steps: [
+      {
+        phase: 'Apertura',
+        title: 'Lettura QR code',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Leggi il QR code della macchina.'] }
+        ]
+      },
+      {
+        phase: 'Apertura',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ k: 'FRECCIA / PUNTO', cap: 'tieni premuto 3 secondi' }] }
+        ]
+      },
+      {
+        phase: 'Apertura',
+        title: 'Test Wi-Fi',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '685' }, { k: 'SUBTOTALE' }] }
+        ]
+      },
+      {
+        phase: 'Scontrini',
+        title: 'Scontrino in contanti',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Fai uno scontrino da 1,39 € su un reparto, pagamento contante.'] }
+        ]
+      },
+      {
+        phase: 'Scontrini',
+        title: 'Annulla lo scontrino',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '87' }, { k: 'SUBTOTALE' }, { t: 'data' }, { t: 'numero' }, { k: 'SUBTOTALE' }] }
+        ]
+      },
+      {
+        phase: 'Scontrini',
+        title: 'Scontrino lotteria',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '88' }, { k: 'SUBTOTALE' }] }
+        ]
+      },
+      {
+        phase: 'Scontrini',
+        title: 'Scontrino elettronico',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Fai uno scontrino da 1,25 € su un reparto, pagamento elettronico.'] }
+        ]
+      },
+      {
+        phase: 'Scontrini',
+        title: 'Annulla lo scontrino',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '87' }, { k: 'SUBTOTALE' }, { t: 'data' }, { t: 'numero' }, { k: 'SUBTOTALE' }] }
+        ]
+      },
+      {
+        phase: 'Chiusura',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ k: 'FRECCIA / PUNTO', cap: 'tieni premuto 3 secondi' }] }
+        ]
+      },
+      {
+        phase: 'Chiusura',
+        title: 'Registro intervento',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '825' }, { k: 'SUBTOTALE' }, { n: '15290', cap: 'codice' }, { k: 'SUBTOTALE' }] }
+        ]
+      },
+      {
+        phase: 'Chiusura',
+        title: 'Scontrino per la check-list',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '808' }, { k: 'SUBTOTALE' }] },
+          { type: 'note', kind: 'info', text: 'Attacca lo scontrino alla check-list.' }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'emotiq-dgfe',
+    name: 'Rinnovo DGFE Emotiq',
+    brand: 'Emotiq',
+    summary: 'Acquisto del rinnovo sul portale EmotiqMe e rinnovo con la chiusura.',
+    steps: [
+      {
+        phase: 'Portale',
+        title: 'Acquista il rinnovo',
+        where: 'web',
+        blocks: [
+          { type: 'list', items: [
+            'Apri il portale EmotiqMe.',
+            'Nella zona DGFE inserisci la matricola della macchina.',
+            'Conferma l\'acquisto del rinnovo DGFE.'
+          ] }
+        ]
+      },
+      {
+        phase: 'Rinnovo',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ k: 'FRECCIA / PUNTO', cap: 'tieni premuto 3 secondi' }] },
+          { type: 'note', kind: 'info', text: 'Con la chiusura la macchina si collega al portale ed esegue il rinnovo.' }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'emotiq-annullo',
+    name: 'Annullo scontrino Emotiq',
+    brand: 'Emotiq',
+    summary: 'Annullamento di uno scontrino.',
+    steps: [
+      {
+        phase: 'Annullo',
+        title: 'Annulla lo scontrino',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '87' }, { k: 'SUBTOTALE' }, { t: 'data' }, { t: 'numero' }, { k: 'SUBTOTALE' }] },
+          { type: 'note', kind: 'info', text: 'Segui le istruzioni sul display.' }
+        ]
+      }
+    ]
+  },
+
+  // ---------- Epson ----------
+
+  {
+    id: 'epson-annullo',
+    name: 'Annullo scontrino Epson',
+    brand: 'Epson',
+    summary: 'Annullamento di uno scontrino.',
+    steps: [
+      {
+        phase: 'Annullo',
+        title: 'Avvia l\'annullo',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '2222' }, { key: true }, { n: '91' }, { t: 'matricola' }, { k: 'CONTANTE' }] }
+        ]
+      },
+      {
+        phase: 'Annullo',
+        title: 'Inserisci i dati',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Inserisci la data e tutto quello che viene richiesto.'] },
+          { type: 'seq', label: 'Alla fine chiede AZZERAMENTO?', seq: [{ k: 'VOID' }] }
+        ]
+      }
+    ]
+  },
+
+  // ---------- RCH ----------
+
+  {
+    id: 'rch-tasto',
+    name: 'Programmazione nuovo tasto RCH Print F',
+    brand: 'RCH',
+    summary: 'Assegnazione di una funzione a un tasto.',
+    steps: [
+      {
+        phase: 'Programmazione',
+        title: 'Entra in programmazione',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '5' }, { key: true }, { n: '555', cap: 'password' }] }
+        ]
+      },
+      {
+        phase: 'Programmazione',
+        title: 'Programma il tasto',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '996' }, { k: 'CONTANTE', x: 2 }, { t: 'codice funzione' }] },
+          { type: 'list', items: ['Premi il tasto dove vuoi mettere la nuova funzione.'] }
+        ]
+      },
+      {
+        phase: 'Programmazione',
+        title: 'Esci',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Per uscire spegni e riaccendi la macchina.'] }
         ]
       }
     ]
