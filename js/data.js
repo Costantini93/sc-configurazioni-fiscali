@@ -46,6 +46,7 @@ const CATEGORIES = [
   'Sostituzione DGFE',
   'Annullo scontrino',
   'Disattivazione',
+  'Cambio ragione sociale',
   'Assistenza',
   'Altre procedure'
 ];
@@ -1498,6 +1499,93 @@ const PRINTERS = [
     ]
   }
 ];
+
+/*
+ * Cambio ragione sociale: per ogni modello si riusano gli step delle altre procedure,
+ * così restano allineati quando si modificano. stepsFrom(id, primo, ultimo, fase) prende
+ * gli step dal titolo "primo" al titolo "ultimo" (compresi) e li mette nella fase indicata.
+ */
+
+function stepsFrom(id, first, last, phase) {
+  var p = PRINTERS.filter(function (x) { return x.id === id; })[0];
+  var titles = p.steps.map(function (st) { return st.title; });
+  var a = titles.indexOf(first);
+  var b = titles.indexOf(last, a);
+  if (a === -1 || b === -1) throw new Error('stepsFrom: step non trovati in ' + id + ': ' + first + ' → ' + last);
+  return p.steps.slice(a, b + 1).map(function (st) {
+    return Object.assign({}, st, { phase: phase });
+  });
+}
+
+PRINTERS.push(
+  {
+    id: 'custom-big-cambio-rs',
+    name: 'Cambio ragione sociale Custom Big',
+    brand: 'Custom',
+    category: 'Cambio ragione sociale',
+    menu: 'Custom Big',
+    summary: 'Chiusura, disattivazione, sostituzione e attivazione DGFE, attivazione, nuova intestazione, aggiornamento e verifica.',
+    needs: [
+      'DGFE nuova',
+      'PC con il programma RX Config',
+      'Dati della nuova ragione sociale per l\'intestazione',
+      'Accesso al portale Custom4U'
+    ],
+    legend: PRINTERS[0].legend,
+    steps: [].concat(
+      stepsFrom('custom-big', 'Chiusura cassa', 'Chiusura cassa', 'Chiusura cassa'),
+      stepsFrom('custom-big-disattivazione', 'Servizi telematici', 'Conferma', 'Disattivazione'),
+      [{
+        phase: 'DGFE',
+        title: 'Sostituisci la DGFE',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Sostituisci la DGFE con quella nuova.'] }
+        ]
+      }],
+      stepsFrom('custom-big', 'Attivazione DGFE', 'Attivazione DGFE', 'DGFE'),
+      stepsFrom('custom-big', 'Attivazione', 'Attivazione', 'Attivazione cassa'),
+      stepsFrom('custom-big', 'Trova l\'indirizzo IP', 'Intestazione scontrino', 'Nuova intestazione'),
+      stepsFrom('custom-big', 'Salva dati su stampante', 'Salva dati su stampante', 'Nuova intestazione'),
+      stepsFrom('custom-verifica', 'Lancia l\'aggiornamento', 'Verifica QR code', 'Aggiornamento e verifica')
+    )
+  },
+
+  {
+    id: 'emotiq-cambio-rs',
+    name: 'Cambio ragione sociale Emotiq',
+    brand: 'Emotiq',
+    category: 'Cambio ragione sociale',
+    menu: 'Emotiq',
+    summary: 'Chiusura, disattivazione, estensione DGFE, attivazione, nuova intestazione, aggiornamento e verifica.',
+    needs: [
+      'PC con Emotiq Tools',
+      'P.IVA, C.F. e intestazione della nuova ragione sociale',
+      'C.F. del tecnico e P.IVA del laboratorio',
+      'Telefono con l\'app / portale EmotiqMe',
+      'Nome e password del Wi-Fi del cliente'
+    ],
+    legend: EMOTIQ_LEGEND,
+    steps: [].concat(
+      stepsFrom('emotiq-disattivazione', 'Chiusura', 'Chiusura', 'Chiusura cassa'),
+      stepsFrom('emotiq-disattivazione', 'Disattiva la cassa', 'Disattiva la cassa', 'Disattivazione'),
+      stepsFrom('emotiq-dgfe', 'Estendi la DGFE', 'Verifica il QR code', 'DGFE'),
+      stepsFrom('emotiq-attivazione', 'Collega la cassa al Wi-Fi', 'Fiscalizzazione', 'Attivazione cassa'),
+      stepsFrom('emotiq-attivazione', 'Intestazione', 'Intestazione', 'Nuova intestazione'),
+      stepsFrom('emotiq-attivazione', 'Trasferisci alla stampante', 'Trasferisci alla stampante', 'Nuova intestazione'),
+      [{
+        phase: 'Aggiornamento e verifica',
+        title: 'Aggiornamento software',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '827' }, { k: 'SBT' }] },
+          { type: 'note', kind: 'tip', text: 'Non spegnere la cassa durante l\'aggiornamento.' }
+        ]
+      }],
+      stepsFrom('emotiq-verifica', 'Scontrino in contanti', 'Consegna al cliente', 'Aggiornamento e verifica')
+    )
+  }
+);
 
 /*
  * Pagine di consultazione (sezione "Consultazione" in home).
