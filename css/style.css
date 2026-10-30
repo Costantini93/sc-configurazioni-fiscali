@@ -277,6 +277,21 @@ h1, h2 { margin: 0; line-height: 1.25; }
 .cat-items { display: grid; gap: 10px; padding: 12px; background: var(--surface-2); border-radius: 0 0 var(--radius) var(--radius); }
 .cat-items .printer-card { box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .cat-chevron { transition: none; } }
+.home-search { margin: 0; top: 64px; box-shadow: var(--shadow); }
+.home-cats, .home-results { display: grid; gap: 12px; }
+.result {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+}
+.result-head { display: flex; flex-direction: column; padding: 14px 16px; }
+.result-head:hover .printer-name { color: var(--brand-2); }
+.result-cat { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 700; }
+.result-step {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; border-top: 1px solid var(--line);
+  font-weight: 550; font-size: 15px;
+}
+.result-step:hover { background: var(--surface-2); }
 .list-title {
   margin: 12px 4px -2px;
   font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 700;

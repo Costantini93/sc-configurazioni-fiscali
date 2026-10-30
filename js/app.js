@@ -84,6 +84,10 @@
   function normalize(s) {
     return String(s).toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
   }
+  // Come normalize ma tiene separate le parole, così una ricerca non combacia a cavallo di due parole
+  function normalizeText(s) {
+    return String(s).toLowerCase().normalize('NFD').replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
+  }
 
   function logo(cls) {
     return '<picture><source srcset="assets/logo-dark.png" media="(prefers-color-scheme: dark)">' +
@@ -259,8 +263,18 @@
         '<h1>Quale procedura vuoi seguire?</h1>' +
         '<p class="lead">Segui la procedura passo per passo. Conferma ogni step con la V verde.</p>' +
       '</header>' +
-      '<main class="printer-list">' + cards + '</main>' +
+      '<main class="printer-list">' +
+        '<label class="fn-search home-search">' + ICON.search +
+          '<input type="search" data-home-search placeholder="Cerca procedura, codice o passaggio" autocomplete="off" aria-label="Cerca nelle procedure" value="' + esc(homeQuery) + '">' +
+        '</label>' +
+        '<div class="home-cats">' + cards + '</div>' +
+        '<div class="home-results" hidden></div>' +
+      '</main>' +
     '</div>';
+  }
+
+  function fnText(it) {
+    return normalizeText(it[0] + ' ' + it[1] + ' ' + ((it[2] && it[2].note) || ''));
   }
 
   function findFunctionPage(id) {
@@ -276,7 +290,7 @@
         return '<div class="fn-group">' + (g.title ? '<div class="fn-group-name">' + esc(g.title) + '</div>' : '') + '<ul class="fn-list">' +
           g.items.map(function (it) {
             var extra = it[2] || {};
-            return '<li data-search="' + esc(normalize(it[0] + it[1] + (extra.note || ''))) + '"' + (extra.seq ? ' class="fn-rich"' : '') + '>' +
+            return '<li data-search="' + esc(fnText(it)) + '"' + (extra.seq ? ' class="fn-rich"' : '') + '>' +
               '<div class="fn-row">' + (it[0] ? '<span class="fn-code">' + esc(it[0]) + '</span>' : '') + '<span>' + esc(it[1]) + '</span></div>' +
               (extra.seq ? renderSeq(extra.seq) : '') +
               (extra.note ? '<p class="fn-note">' + esc(extra.note) + '</p>' : '') +
@@ -308,6 +322,88 @@
         '<p class="fn-empty muted" hidden>Nessuna funzione trovata.</p>' +
       '</main>' +
     '</div>';
+  }
+
+  // ---------- Ricerca in home ----------
+
+  // Testo di ogni step (titolo, tasti, elenchi, tabelle, note) per la ricerca
+  function stepText(st) {
+    var parts = [st.phase, st.title, st.intro || ''];
+    st.blocks.forEach(function (b) {
+      if (b.label) parts.push(b.label);
+      if (b.seq) b.seq.forEach(function (t) { parts.push(t.k || t.n || t.m || t.t || '', t.cap || ''); });
+      if (b.items) parts = parts.concat(b.items);
+      if (b.head) parts = parts.concat(b.head);
+      if (b.rows) b.rows.forEach(function (r) { parts = parts.concat(r); });
+      if (b.text) parts.push(b.text);
+      if (b.type === 'input') parts.push(b.label);
+    });
+    return normalizeText(parts.join(' '));
+  }
+  var searchIndex = null;
+  function buildIndex() {
+    searchIndex = PRINTERS.map(function (p) {
+      return {
+        p: p,
+        meta: normalizeText([p.name, p.menu, p.category, p.brand, p.summary].join(' ')),
+        steps: p.steps.map(stepText)
+      };
+    });
+  }
+  function searchWords(q) { return q.split(/\s+/).map(normalize).filter(Boolean); }
+  function hasAll(text, words) { return words.every(function (w) { return text.indexOf(w) !== -1; }); }
+
+  function homeResults(q) {
+    if (!searchIndex) buildIndex();
+    var words = searchWords(q);
+    var html = '';
+    searchIndex.forEach(function (e) {
+      var all = e.meta + ' ' + e.steps.join(' ');
+      if (!hasAll(all, words)) return;
+      // step che contengono almeno una parola e, insieme a nome e categoria della procedura, tutte
+      var hits = [];
+      e.steps.forEach(function (t, i) {
+        var some = words.some(function (w) { return t.indexOf(w) !== -1; });
+        if (some && hasAll(e.meta + ' ' + t, words)) hits.push(i);
+      });
+      html += '<div class="result">' +
+        '<a class="result-head" href="#/p/' + e.p.id + '">' +
+          '<span class="result-cat">' + esc(e.p.category) + '</span>' +
+          '<span class="printer-name">' + esc(e.p.menu) + '</span>' +
+        '</a>' +
+        hits.map(function (i) {
+          return '<a class="result-step" href="#/p/' + e.p.id + '/step/' + i + '">' +
+            '<span class="sheet-mark">' + (i + 1) + '</span><span>' + esc(e.p.steps[i].title) + '</span></a>';
+        }).join('') +
+      '</div>';
+    });
+    FUNCTION_PAGES.forEach(function (f) {
+      var n = 0;
+      f.sections.forEach(function (sec) {
+        sec.groups.forEach(function (g) {
+          g.items.forEach(function (it) { if (hasAll(fnText(it), words)) n++; });
+        });
+      });
+      if (!n) return;
+      html += '<div class="result">' +
+        '<a class="result-head" href="#/funzioni/' + f.id + '/' + encodeURIComponent(q.trim()) + '">' +
+          '<span class="result-cat">Consultazione</span>' +
+          '<span class="printer-name">' + esc(f.name) + '</span>' +
+          '<span class="printer-meta">' + n + (n === 1 ? ' funzione trovata' : ' funzioni trovate') + '</span>' +
+        '</a>' +
+      '</div>';
+    });
+    return html || '<p class="muted fn-empty">Nessun risultato.</p>';
+  }
+
+  function filterHome() {
+    var input = app.querySelector('[data-home-search]');
+    homeQuery = input.value;
+    var active = searchWords(homeQuery).length > 0;
+    var results = app.querySelector('.home-results');
+    app.querySelector('.home-cats').hidden = active;
+    results.hidden = !active;
+    results.innerHTML = active ? homeResults(homeQuery) : '';
   }
 
   // Filtra l'elenco senza ridisegnare la pagina (il campo di ricerca mantiene il focus).
@@ -447,6 +543,7 @@
 
   var lastStep = { id: null, i: -1 };
   var openCats = {}; // categorie aperte in home, ricordate finché l'app resta aperta
+  var homeQuery = ''; // ricerca in home, ricordata tornando indietro
   var lastResult = null;
 
   function route() {
@@ -480,10 +577,18 @@
     lastStep = { id: null, i: -1 };
     if (parts[0] === 'funzioni') {
       // #/funzioni (vecchio link) apre le funzioni Custom
+      // #/funzioni/<pagina>/<ricerca> apre la pagina già filtrata (dalla ricerca in home)
       var page = findFunctionPage(parts[1] || 'custom');
-      return page ? render(viewFunctions(page)) : go('#/');
+      if (!page) return go('#/');
+      render(viewFunctions(page));
+      if (parts[2]) {
+        app.querySelector('[data-filter]').value = decodeURIComponent(parts.slice(2).join('/'));
+        filterFunctions();
+      }
+      return;
     }
     render(viewHome());
+    if (homeQuery) filterHome();
   }
 
   function render(html) {
@@ -578,6 +683,7 @@
 
   app.addEventListener('input', function (e) {
     if (e.target.hasAttribute && e.target.hasAttribute('data-filter')) return filterFunctions();
+    if (e.target.hasAttribute && e.target.hasAttribute('data-home-search')) return filterHome();
     var key = e.target.getAttribute && e.target.getAttribute('data-var');
     var p = currentPrinter();
     if (!key || !p) return;
