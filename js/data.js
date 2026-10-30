@@ -159,7 +159,8 @@ const PRINTERS = [
           { type: 'table', head: ['Reparto', 'Aliquota IVA'], rows: [
             ['1', '22%'],
             ['2', '10%'],
-            ['3', '4%']
+            ['3', '4%'],
+            ['8', 'Forfettario']
           ] }
         ]
       },
