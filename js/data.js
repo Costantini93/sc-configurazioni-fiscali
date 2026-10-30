@@ -28,6 +28,14 @@
  *   proprietà facoltative: cap (didascalia sotto il token), x (numero di ripetizioni)
  */
 
+// Labware Basiq: legenda dei tasti
+const LABWARE_LEGEND = [
+  { tok: { key: true }, text: 'Tasto chiave: Chiave 1 = X, Chiave 2 = Z, Chiave 3 = SET' },
+  { tok: { k: 'CONTANTI' }, text: 'Conferma e passa al campo successivo' },
+  { tok: { k: 'ANNULLO SCONTRINO' }, text: 'Conferma le operazioni verso l\'AdE (50-63, 80)' },
+  { tok: { k: 'FN' }, text: 'Seconda funzione del tasto' }
+];
+
 // Emotiq: legenda e annullo scontrino, usati da più procedure
 const EMOTIQ_LEGEND = [
   { tok: { k: 'SBT' }, text: 'Subtotale: conferma' },
@@ -720,7 +728,8 @@ const PRINTERS = [
         title: 'Inizializza la DGFE',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '18' }, { k: 'ANNULLO' }] }
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '18' }, { k: 'ANNULLO' }] },
+          { type: 'note', kind: 'info', text: 'Z 18 = inizializzazione DGFE: la cassa stampa uno scontrino con numero DGFE, data, ora di attivazione e matricola.' }
         ]
       },
       {
@@ -758,19 +767,62 @@ const PRINTERS = [
 
   {
     id: 'labware-basic',
-    name: 'Labware Basic',
+    name: 'Preparazione Labware Basiq',
     brand: 'Labware',
     category: 'Preparazione',
-    menu: 'Labware Basic',
-    summary: 'Censimento, attivazione, aggiornamenti e programmazione reparti.',
+    menu: 'Labware Basiq',
+    summary: 'Data e ora, rete, censimento, attivazione, aggiornamenti, intestazione, aliquote IVA e reparti.',
+    needs: [
+      'Cassa collegata a internet (porta LAN1)',
+      'C.F. del tecnico abilitato e P.IVA del centro assistenza',
+      'P.IVA del cliente e dati per l\'intestazione',
+      'Reparti e aliquote IVA del cliente'
+    ],
+    legend: LABWARE_LEGEND,
     steps: [
+      {
+        phase: 'Data e ora',
+        title: 'Data e ora',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', label: 'Entra in programmazione (SET), codice 01:', seq: [{ key: true }, { n: '3' }, { key: true }, { n: '01' }] },
+          { type: 'seq', label: 'Data:', seq: [{ t: 'GGMMAAAA' }, { k: 'FN' }, { k: ',' }] },
+          { type: 'note', kind: 'info', text: 'Se compare PRIMA CONFERMA (data più avanti di oltre un giorno), ricontrolla la data e premi 2 volte SUB-TOTALE: compaiono SECONDA CONFERMA e DATA CONFERMATA.' },
+          { type: 'seq', label: 'Ora:', seq: [{ k: 'CONTANTI' }, { t: 'HHMM' }, { k: 'FN' }, { k: ',' }] },
+          { type: 'note', kind: 'warn', text: 'Si può fare solo dopo una chiusura. Non si può mettere una data precedente all\'ultima operazione fiscale: un errore sulla data può bloccare la cassa in modo irreparabile.' }
+        ]
+      },
+      {
+        phase: 'Rete',
+        title: 'Indirizzo IP',
+        where: 'printer',
+        intro: 'Serve solo se la rete del cliente non assegna l\'indirizzo in automatico.',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '3' }, { key: true }, { n: '22' }] },
+          { type: 'table', head: ['Campo', 'Esempio'], rows: [
+            ['Abilita DHCP', '0 = no, 1 = sì'],
+            ['Indirizzo IP', '192168001025'],
+            ['Subnet mask', '255255255000'],
+            ['Gateway', '192168001254'],
+            ['DNS 1', '008008008008'],
+            ['DNS 2', '008008004004']
+          ] },
+          { type: 'note', kind: 'info', text: 'Gli indirizzi si scrivono senza punti, completando ogni gruppo con gli zeri. Conferma ogni campo con CONTANTI; alla fine premi di nuovo CONTANTI per tornare al menu SET.' }
+        ]
+      },
       {
         phase: 'Censimento',
         title: 'Censimento',
         where: 'printer',
         intro: 'Seleziona la tastiera dal menu (le 3 linee).',
         blocks: [
-          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '50' }, { k: 'ANNULLO' }] }
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '50' }] },
+          { type: 'table', head: ['Dato richiesto', ''], rows: [
+            ['C.F. tecnico abilitato', 'poi CONTANTI'],
+            ['P.IVA centro assistenza', 'poi CONTANTI']
+          ] },
+          { type: 'seq', label: 'Conferma:', seq: [{ k: 'ANNULLO SCONTRINO' }] },
+          { type: 'note', kind: 'info', text: 'A censimento riuscito la cassa salva il certificato del dispositivo, valido 8 anni.' }
         ]
       },
       {
@@ -778,16 +830,24 @@ const PRINTERS = [
         title: 'Attivazione',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '53' }, { k: 'ANNULLO' }] }
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '53' }] },
+          { type: 'table', head: ['Dato richiesto', ''], rows: [
+            ['P.IVA esercente', 'poi CONTANTI'],
+            ['C.F. tecnico abilitato', 'poi CONTANTI'],
+            ['P.IVA centro assistenza', 'poi CONTANTI']
+          ] },
+          { type: 'seq', label: 'Conferma:', seq: [{ k: 'ANNULLO SCONTRINO' }] },
+          { type: 'note', kind: 'info', text: 'Il 53 attiva la cassa e la mette subito in servizio. Per comunicare una data di messa in servizio futura si usa il 51.' }
         ]
       },
       {
         phase: 'Aggiornamenti',
-        title: 'Aggiornamento parte fiscale',
+        title: 'Aggiornamento firmware (parte fiscale)',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '80' }] },
-          { type: 'note', kind: 'info', text: 'Al termine riavvia la macchina.' }
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '80' }, { k: 'ANNULLO SCONTRINO' }] },
+          { type: 'seq', label: 'Finito lo scaricamento, conferma:', seq: [{ key: true, cap: 'oppure CL per annullare' }] },
+          { type: 'note', kind: 'warn', text: 'Non spegnere la cassa: durante l\'aggiornamento il led frontale lampeggia blu. Alla fine torna da sola in REG.' }
         ]
       },
       {
@@ -803,11 +863,56 @@ const PRINTERS = [
         ]
       },
       {
-        phase: 'Reparti',
-        title: 'Programma i reparti',
+        phase: 'Programmazione',
+        title: 'Intestazione (ragione sociale)',
+        where: 'printer',
+        intro: '10 righe da 48 caratteri. Con CONTANTI passi alla riga successiva.',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '16' }, { k: 'CONTANTI' }, { t: 'righe intestazione' }] },
+          { type: 'table', head: ['Tasto', 'Funzione'], rows: [
+            ['%+ / %-', 'Sposta il cursore a destra / sinistra'],
+            ['FN + 7', 'Centra la riga'],
+            ['FN + 5', 'Cancella la riga'],
+            ['SUB-TOTALE', 'Stampa le righe per controllarle']
+          ] },
+          { type: 'seq', label: 'Alla fine, per tornare in REG:', seq: [{ key: true }] },
+          { type: 'note', kind: 'warn', text: 'Si può fare solo se dopo l\'ultima chiusura non sono stati emessi scontrini: altrimenti fai prima la chiusura giornaliera.' }
+        ]
+      },
+      {
+        phase: 'Programmazione',
+        title: 'Aliquote IVA',
         where: 'printer',
         blocks: [
-          { type: 'list', items: ['Programma i reparti con prezzi e IVA corretti.'] }
+          { type: 'seq', seq: [{ key: true }, { n: '3' }, { key: true }, { n: '05' }] },
+          { type: 'list', items: ['Per ogni gruppo IVA (1, 2, 3…) scrivi l\'aliquota e premi CONTANTI.'] },
+          { type: 'table', head: ['Codice esenzione', 'Natura'], rows: [
+            ['0 · EE', 'N1 escluse ex art. 15'],
+            ['1 · NS', 'N2 non soggette'],
+            ['2 · NI', 'N3 non imponibili'],
+            ['3 · ES', 'N4 esenti'],
+            ['4 · RM', 'N5 regime del margine'],
+            ['5 · AL', 'N6 altro non IVA']
+          ] }
+        ]
+      },
+      {
+        phase: 'Programmazione',
+        title: 'Reparti',
+        where: 'printer',
+        intro: 'Programma i reparti con prezzi e IVA corretti.',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '3' }, { key: true }, { n: '02' }] },
+          { type: 'table', head: ['Campo', 'Come'], rows: [
+            ['Numero reparto', 'Numero, poi CONTANTI'],
+            ['Descrizione', 'Max 20 caratteri, poi CONTANTI'],
+            ['Prezzo', 'Prezzo unitario, poi CONTANTI'],
+            ['Articolo singolo', 'FN + , per SÌ/NO, poi CONTANTI'],
+            ['Gruppo IVA', 'Numero del gruppo (1-10), poi CONTANTI'],
+            ['Limite prezzo', '0 = nessun controllo, poi CONTANTI'],
+            ['Unità di misura · Bene/Servizio/Ventilazione', 'CONTANTI passa al reparto successivo']
+          ] },
+          { type: 'note', kind: 'tip', text: 'Per stampare i reparti programmati, da SET 02 premi SUB-TOTALE. Per passare a un\'altra programmazione premi , seguito dal codice.' }
         ]
       }
     ]
@@ -815,22 +920,155 @@ const PRINTERS = [
 
   {
     id: 'labware-disattivazione',
-    name: 'Disattivazione Labware Smart RT / Basic',
+    name: 'Disattivazione Labware Smart RT / Basiq',
     brand: 'Labware',
     category: 'Disattivazione',
-    menu: 'Labware Smart RT / Basic',
-    summary: 'Disattivazione della cassa.',
+    menu: 'Labware Smart RT / Basiq',
+    summary: 'Disattivazione della cassa all\'Agenzia delle Entrate.',
+    needs: ['C.F. del tecnico abilitato e P.IVA del centro assistenza'],
     steps: [
       {
         phase: 'Disattivazione',
         title: 'Disattiva la cassa',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '55' }, { k: 'ANNULLO' }] }
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '55' }] },
+          { type: 'table', head: ['Dato richiesto', ''], rows: [
+            ['C.F. tecnico abilitato', 'poi CONTANTI'],
+            ['P.IVA centro assistenza', 'poi CONTANTI']
+          ] },
+          { type: 'seq', label: 'Conferma:', seq: [{ k: 'ANNULLO', cap: 'ANNULLO SCONTRINO sulla Basiq' }] },
+          { type: 'note', kind: 'info', text: '55 = disattivazione per cessione. Per un altro motivo si usa il 56, che chiede di scrivere il motivo. Dopo la disattivazione la cassa non è più associata all\'esercente.' }
         ]
       }
     ]
   },
+
+  {
+    id: 'labware-annullo',
+    name: 'Annullo scontrino Labware Basiq',
+    brand: 'Labware',
+    category: 'Annullo scontrino',
+    menu: 'Labware Basiq',
+    summary: 'Documento commerciale di annullamento di uno scontrino già emesso.',
+    legend: LABWARE_LEGEND,
+    steps: [
+      {
+        phase: 'Annullo',
+        title: 'Avvia l\'annullo',
+        where: 'printer',
+        intro: 'Tieni a portata di mano lo scontrino da annullare. La cassa deve essere in REG.',
+        blocks: [
+          { type: 'seq', seq: [{ k: 'ANNULLO' }] }
+        ]
+      },
+      {
+        phase: 'Annullo',
+        title: 'Matricola',
+        where: 'printer',
+        intro: 'Il display mostra la matricola della cassa.',
+        blocks: [
+          { type: 'seq', seq: [{ k: ',', cap: 'conferma' }] },
+          { type: 'note', kind: 'info', text: 'Se lo scontrino è di un\'altra Basiq, scrivi la sua matricola e conferma con ,.' }
+        ]
+      },
+      {
+        phase: 'Annullo',
+        title: 'Numero del documento',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ t: 'n. chiusura' }, { t: 'n. documento' }, { k: ',' }] },
+          { type: 'note', kind: 'info', text: 'Sullo scontrino: Doc. N. 0002-0010 → chiusura 0002, documento 0010.' }
+        ]
+      },
+      {
+        phase: 'Annullo',
+        title: 'Data del documento',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ t: 'GGMMAAAA' }, { k: ',' }] },
+          { type: 'note', kind: 'info', text: 'La cassa cerca lo scontrino nel DGFE e stampa il documento commerciale emesso per ANNULLAMENTO.' }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'labware-pendenti',
+    name: 'Corrispettivi non inviati Labware Basiq',
+    brand: 'Labware',
+    category: 'Assistenza',
+    menu: 'Labware · Corrispettivi non inviati',
+    summary: 'Controllo e invio forzato dei corrispettivi e delle lotterie pendenti.',
+    legend: LABWARE_LEGEND,
+    steps: [
+      {
+        phase: 'Controllo',
+        title: 'Stampa i pendenti',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '42' }, { k: 'CONTANTI' }] },
+          { type: 'note', kind: 'info', text: 'Stampa l\'elenco dei corrispettivi e delle lotterie non ancora trasmessi all\'AdE.' }
+        ]
+      },
+      {
+        phase: 'Invio',
+        title: 'Invia i pendenti',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '40' }, { k: 'CONTANTI' }] },
+          { type: 'note', kind: 'info', text: 'Durante la trasmissione il led frontale diventa giallo.' }
+        ]
+      },
+      {
+        phase: 'Invio',
+        title: 'Invio di un singolo corrispettivo',
+        where: 'printer',
+        intro: 'Solo se un corrispettivo resta pendente.',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '41' }, { k: 'CONTANTI' }, { t: 'n. corrispettivo' }, { k: 'CONTANTI' }] },
+          { type: 'note', kind: 'info', text: 'Per una fornitura lotteria usa il codice 47 al posto del 41.' }
+        ]
+      },
+      {
+        phase: 'Controllo',
+        title: 'Controlla gli esiti',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '43' }, { k: 'CONTANTI' }] },
+          { type: 'note', kind: 'info', text: 'Stampa gli esiti degli invii dei corrispettivi (45 per le lotterie).' }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'labware-fuori-servizio',
+    name: 'Fuori servizio Labware Basiq',
+    brand: 'Labware',
+    category: 'Altre procedure',
+    menu: 'Labware Basiq · Fuori servizio',
+    summary: 'Segnalazione di fuori servizio all\'Agenzia delle Entrate (inattività o guasto).',
+    legend: LABWARE_LEGEND,
+    steps: [
+      {
+        phase: 'Fuori servizio',
+        title: 'Segnala il fuori servizio',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '61', cap: 'magazzino / inattività' }] },
+          { type: 'table', head: ['Codice', 'Motivo'], rows: [
+            ['61', 'Magazzino (inattività di almeno 12 giorni)'],
+            ['62', 'Malfunzionamento'],
+            ['63', 'Altro (chiede il motivo)']
+          ] },
+          { type: 'seq', label: 'Avanza e conferma:', seq: [{ k: 'CONTANTI', cap: 'avanza' }, { k: 'ANNULLO SCONTRINO', cap: 'conferma' }] },
+          { type: 'note', kind: 'info', text: 'La cassa resta attiva e associata all\'esercente e torna in servizio da sola con la prima trasmissione dei corrispettivi.' }
+        ]
+      }
+    ]
+  },
+
 
   // ---------- 3i ----------
 
@@ -1885,6 +2123,225 @@ const EMOTIQ_FUNCTIONS = [
   }
 ];
 
+// Funzioni della Labware Basiq (dal manuale utente Basiq ver. 5.05)
+const LABWARE_FUNCTIONS = [
+  {
+    id: 'reg',
+    name: 'Tasti in REG',
+    groups: [
+      { items: [
+        ['', 'RISTAMPA ULTIMI N SCONTRINI', { seq: [{ t: 'n' }, { k: 'FN' }, { k: 'X' }], note: 'Es. 3 FN X ristampa gli ultimi 3.' }],
+        ['', 'SCONTRINO DI CORTESIA ULTIMA VENDITA', { seq: [{ k: 'FN' }, { k: 'CONTANTI' }] }],
+        ['', 'DATA E ORA SUL DISPLAY CLIENTE', { seq: [{ k: 'FN' }, { k: 'X' }] }],
+        ['', 'CODICE LOTTERIA / CODICE FISCALE / P.IVA', { seq: [{ k: 'FN' }, { k: 'C.F.', cap: 'tasto ENTRATE' }], note: '1 volta: codice lotteria; 2 volte: codice fiscale; 3 volte: P.IVA. Chiudi con FN + C.F.' }],
+        ['', 'ANNULLO DI UNO SCONTRINO EMESSO', { seq: [{ k: 'ANNULLO' }, { k: ',', cap: 'matricola' }, { t: 'n. chiusura + n. doc.' }, { k: ',' }, { t: 'data' }, { k: ',' }] }],
+        ['', 'RESO MERCE', { seq: [{ k: 'FN' }, { k: 'ANNULLO' }, { k: ',', cap: 'matricola' }, { t: 'n. chiusura + n. doc.' }, { k: ',' }, { t: 'data' }, { k: ',' }, { t: 'importo' }, { k: 'REPARTO' }, { k: 'CONTANTI' }] }],
+        ['', 'ANNULLO SCONTRINO IN CORSO', { seq: [{ k: 'ANNULLO SCONTRINO' }] }],
+        ['', 'CORREZIONE ULTIMA RIGA', { seq: [{ k: 'FN' }, { k: 'STORNO' }] }],
+        ['', 'STORNO DI UNA RIGA', { seq: [{ k: 'STORNO' }, { t: 'importo' }, { k: 'REPARTO' }] }],
+        ['', 'OMAGGIO', { seq: [{ k: 'FN' }, { k: '%-' }, { n: '1' }], note: 'Dopo SUB-TOTALE vale per tutto lo scontrino.' }],
+        ['', 'PAGAMENTO CARTA DI CREDITO', { seq: [{ t: 'n carta' }, { k: 'CARTE' }] }],
+        ['', 'PAGAMENTO BANCOMAT', { seq: [{ k: 'FN' }, { k: 'CARTE' }] }],
+        ['', 'PAGAMENTO ASSEGNI', { seq: [{ k: 'FN' }, { k: 'PRELIEVI' }] }],
+        ['', 'NON RISCOSSO / CREDITO', { seq: [{ k: 'FN' }, { k: 'CREDITO' }] }],
+        ['', 'ENTRATE DI CASSA', { seq: [{ t: 'importo' }, { k: 'ENTRATE' }, { k: 'CONTANTI' }] }],
+        ['', 'PRELIEVI DI CASSA', { seq: [{ t: 'importo' }, { k: 'PRELIEVI' }, { k: 'CONTANTI' }] }],
+        ['', 'SCONTRINO DIGITALE (MODALITÀ DI STAMPA)', { seq: [{ k: 'FN' }, { k: 'CARTA' }], note: 'Prima di chiudere lo scontrino, 1 o 2 volte.' }]
+      ] }
+    ]
+  },
+  {
+    id: 'x',
+    name: 'Letture X',
+    seq: [{ key: true }, { n: '1' }, { key: true }, { n: 'codice' }, { k: 'CONTANTI' }],
+    note: 'Stampe non fiscali. Per cambiare codice premi , seguito dal nuovo codice.',
+    groups: [
+      { items: [
+        ['01', 'FINANZIARIO GIORNALIERO'],
+        ['03', 'REPARTI GIORNALIERO'],
+        ['07', 'FINANZIARIO PERIODICO'],
+        ['13', 'TOTALE CONTANTI GIORNALIERO (SOLO VISUALIZZAZIONE)']
+      ] }
+    ]
+  },
+  {
+    id: 'z',
+    name: 'Azzeramenti Z',
+    seq: [{ key: true }, { n: '2' }, { key: true }, { n: 'codice' }, { k: 'CONTANTI' }],
+    note: 'Dal 50 al 63: inserisci i dati richiesti avanzando con CONTANTI e conferma con ANNULLO SCONTRINO.',
+    groups: [
+      { title: 'Chiusure e memoria di riepilogo', items: [
+        ['01', 'RAPPORTO FISCALE GIORNALIERO (CHIUSURA)'],
+        ['02', 'RAPPORTO FINANZIARIO GIORNALIERO'],
+        ['07', 'FINANZIARIO PERIODICO'],
+        ['11', 'STAMPA INTERVENTI TECNICI PER DATA'],
+        ['12', 'STAMPA TOTALI FISCALI GIORNO X NUMERO'],
+        ['13', 'STAMPA TOTALI FISCALI GIORNO X DATA'],
+        ['14', 'STAMPA SOMMA TOTALI FISCALI X DATA'],
+        ['15', 'STAMPA CONTENUTO MEMORIA DI RIEPILOGO'],
+        ['16', 'PROGRAM. DATI IDENTIFICATIVI (RAGIONE SOCIALE)', { note: 'Solo dopo una chiusura. 10 righe da 48 caratteri.' }],
+        ['17', 'VISUALIZ. NUMERO MATRICOLA']
+      ] },
+      { title: 'DGFE', items: [
+        ['18', 'INIZIALIZZAZIONE DGFE', { note: 'Attiva una DGFE nuova e stampa numero DGFE, data e matricola.' }],
+        ['21', 'LETTURA DGFE DA DATA A DATA'],
+        ['22', 'LETTURA DGFE DA DATA X SCONTRINO'],
+        ['23', 'LETTURA DGFE INTEGRALE'],
+        ['24', 'INVIO LETTURA DGFE COMPUTER'],
+        ['25', 'LETTURA DOC. ANNULLO/RESO DGFE X DATA'],
+        ['26', 'LETTURA DGFE RICERCA DOCUMENTO COMMERCIALE'],
+        ['28', 'LETTURA DGFE RAPPORTI FINANZIARI PER DATA'],
+        ['30', 'DGFE -> PC: XML DA DATA A DATA'],
+        ['31', 'DGFE -> PC: XML ESITI DA DATA A DATA'],
+        ['32', 'DGFE -> PC: XML CORRISPETTIVI E LOTTERIA PENDENTI'],
+        ['33', 'DGFE -> PC: XML CORRISPETTIVO N.'],
+        ['34', 'DGFE -> PC: XML M.RIEPILOGO INTEGRALE'],
+        ['35', 'DGFE -> PC: XML M.DETTAGLIO INTEGRALE'],
+        ['36', 'DGFE -> BROWSER: XML CORRISPETTIVO E LOTTERIA PER N. E SCONTRINI DIGITALI']
+      ] },
+      { title: 'Invii all\'AdE', items: [
+        ['40', 'INVIA CORRISPETTIVI E LOTTERIA PENDENTI'],
+        ['41', 'INVIO MANUALE CORRISPETTIVO N.'],
+        ['42', 'STAMPA ELENCO CORRISPETTIVI E LOTTERIA PENDENTI'],
+        ['43', 'STAMPA ESITO INVIO CORRISP. NEL DGFE'],
+        ['44', 'STAMPA ESITO INVIO CORRISP. DATA <-> DATA'],
+        ['45', 'STAMPA ESITO INVIO LOTTERIA NEL DGFE'],
+        ['46', 'STAMPA ESITO INVIO LOTTERIA DATA <-> DATA'],
+        ['47', 'INVIO MANUALE FORNITURA LOTTERIA N.']
+      ] },
+      { title: 'Stato del dispositivo', items: [
+        ['50', 'CENSIMENTO DISPOSITIVO', { note: 'Chiede C.F. tecnico e P.IVA centro assistenza.' }],
+        ['51', 'ATTIVA E COMUNICA DATA MESSA IN SERVIZIO', { note: 'Chiede P.IVA esercente, C.F. tecnico e P.IVA centro assistenza.' }],
+        ['52', 'ATTIVA E SALVA DATA (SOLO TEST DI LABORATORIO, NON USARE)'],
+        ['53', 'ATTIVA E METTI SUBITO IN SERVIZIO', { note: 'Chiede P.IVA esercente, C.F. tecnico e P.IVA centro assistenza.' }],
+        ['54', 'ESERCITA REVOCA (NON PIÙ DISPONIBILE)'],
+        ['55', 'DISATTIVAZIONE - CESSIONE', { note: 'Chiede C.F. tecnico e P.IVA centro assistenza.' }],
+        ['56', 'DISATTIVAZIONE - ALTRO', { note: 'Chiede C.F. tecnico, P.IVA centro assistenza e il motivo.' }],
+        ['57', 'DISMISSIONE - SMALTIMENTO', { note: 'Definitiva: dopo la cassa permette solo le letture.' }],
+        ['58', 'DISMISSIONE - MEMORIA FISCALE ESAURITA', { note: 'Definitiva: dopo la cassa permette solo le letture.' }],
+        ['59', 'RIMETTI IN SERVIZIO DOPO REVOCA'],
+        ['60', 'METTI IN SERVIZIO PRIMA DELLA DATA (SOLO TEST DI LABORATORIO)'],
+        ['61', 'FUORI SERVIZIO - MAGAZZINO', { note: 'Per inattività di almeno 12 giorni. Torna in servizio con il primo invio.' }],
+        ['62', 'FUORI SERVIZIO - MALFUNZIONAMENTO'],
+        ['63', 'FUORI SERVIZIO - ALTRO']
+      ] },
+      { title: 'Firmware', items: [
+        ['80', 'RICHIESTA AGGIORNAMENTO FIRMWARE', { seq: [{ key: true }, { n: '2' }, { key: true }, { n: '80' }, { k: 'ANNULLO SCONTRINO' }, { key: true, cap: 'conferma (CL annulla)' }], note: 'Non spegnere: il led lampeggia blu fino alla fine.' }]
+      ] }
+    ]
+  },
+  {
+    id: 'set',
+    name: 'Programmazione SET',
+    seq: [{ key: true }, { n: '3' }, { key: true }, { n: 'codice' }],
+    note: 'Per passare a un\'altra programmazione premi , seguito dal codice. SUB-TOTALE stampa la programmazione aperta.',
+    groups: [
+      { items: [
+        ['01', 'DATA E ORA'],
+        ['02', 'REPARTI'],
+        ['04', 'SCONTI E MAGGIORAZIONI'],
+        ['05', 'ALIQUOTE IVA'],
+        ['06', 'CODICE ATTIVITÀ (ATECO)', { note: 'Fino a 3 codici, 6 cifre senza punti.' }],
+        ['07', 'CARTE DI CREDITO'],
+        ['10', 'TICKET (BUONI PASTO)'],
+        ['14', 'OPZIONI (FLAG)'],
+        ['15', 'PARAMETRI CASSA'],
+        ['16', 'TIPO CARATTERE INTESTAZIONE'],
+        ['22', 'INDIRIZZO IP'],
+        ['23', 'PASSWORD ACCESSO BROWSER'],
+        ['27', 'MESSAGGI DI CORTESIA'],
+        ['28', 'TIPO CARATTERE MESSAGGI DI CORTESIA'],
+        ['29', 'DESCRIZIONI FUNZIONI'],
+        ['30', 'CODICI DI ACCESSO CHIAVI'],
+        ['31', 'SCONTI E MAGGIORAZIONI AGGIUNTIVI']
+      ] }
+    ]
+  },
+  {
+    id: 'flag',
+    name: 'Opzioni SET 14',
+    seq: [{ key: true }, { n: '3' }, { key: true }, { n: '14' }],
+    note: 'FN + , cambia il valore, CONTANTI passa al flag successivo, SUB-TOTALE stampa i flag. Tra parentesi il valore di default.',
+    groups: [
+      { items: [
+        ['2', 'BUZZER TASTIERA (SÌ)'],
+        ['3', 'STAMPA APERTURA CASSETTO (NO)'],
+        ['4', 'TASTIERA 10 REPARTI (NO)'],
+        ['5', 'BARCODE SCANNER (NO)'],
+        ['8', 'STAMPA NUMERO PEZZI (NO)'],
+        ['13', 'OBBLIGO SUB-TOTALE (NO)'],
+        ['15', 'DISPLAY GRAFICO SMART (SÌ)'],
+        ['19', 'TASTO STORNO PROTETTO (SÌ)', { note: 'SÌ = usabile solo da stato X.' }],
+        ['20', 'TASTO CORREZIONE PROTETTO (SÌ)'],
+        ['21', 'TASTO ANNULLO SCONTRINO PROTETTO (SÌ)'],
+        ['22', 'TASTO SCONTO % PROTETTO (SÌ)'],
+        ['23', 'TASTO SCONTO PROTETTO (SÌ)'],
+        ['24', 'TASTO NON RISCOSSO DCRaSSN (SÌ)'],
+        ['25', 'TASTO NON RISCOSSO FATTURA (SÌ)'],
+        ['26', 'TASTO OMAGGIO (SÌ)'],
+        ['28', 'STAMPA NUMERO CASSA (NO)'],
+        ['29', 'STAMPA A FINE TRANSAZIONE (SÌ)'],
+        ['30', 'OBBLIGO INSERIMENTO PAGAMENTO (NO)'],
+        ['31', 'STAMPA INTERLINEA TOTALE (NO)'],
+        ['33', 'TASTIERA ALFANUMERICA PER DESCRIZIONI (NO)'],
+        ['34', 'RETROILLUMINAZIONE (SÌ)'],
+        ['35', 'CREDITO NON RISCOSSO (SÌ)', { note: 'Va su SÌ anche per il pagamento con BONIFICO.' }],
+        ['36', 'STAMPA RESTI FINANZIARI (SÌ)'],
+        ['37', 'VIRGOLA IMPLICITA (SÌ)', { note: 'SÌ: 125 = 1,25 €. NO: 1,25 si scrive 1 , 25.' }],
+        ['38', 'STAMPA NUMERI DEL LOTTO (NO)'],
+        ['39', 'OBBLIGO CHIUSURA Z A ORARIO (NO)', { note: 'L\'ora si imposta in SET 15, parametro 15.' }],
+        ['40', 'DATA/ORA AUTOMATICA SUL DISPLAY (NO)'],
+        ['41', 'VENTILAZIONE IVA (NO)'],
+        ['42', 'STAMPA DETTAGLIO PAGAMENTI (SÌ)'],
+        ['43', 'ON/OFF GESTITO DA PC (NO)'],
+        ['44', 'STAMPA COMPATTA (NO)'],
+        ['45', 'STAMPA INFO LOTTERIA (SÌ)'],
+        ['46', 'STAMPA PREZZO UNITARIO (NO)'],
+        ['47', 'APERTURA CASSETTO SOLO MANUALE (NO)'],
+        ['49', 'CHIUSURA AUTOMATICA DOPO INATTIVITÀ (NO)'],
+        ['50', 'INFO STATO AL CLOUD (NO)'],
+        ['51', 'ARROTONDAMENTO DL.50/2017 (SÌ)'],
+        ['52', 'INVIO A SISTEMA TESSERA SANITARIA (NO)'],
+        ['55', 'CHIUSURA AUTOMATICA ALL\'ORA HH (NO)']
+      ] }
+    ]
+  },
+  {
+    id: 'param',
+    name: 'Parametri cassa SET 15',
+    seq: [{ key: true }, { n: '3' }, { key: true }, { n: '15' }],
+    note: 'Tra parentesi il valore di default.',
+    groups: [
+      { items: [
+        ['5', 'NUMERO RITRASMISSIONI (3)'],
+        ['6', 'TEMPO TRA LE RITRASMISSIONI (2 S)'],
+        ['7', 'INTENSITÀ STAMPANTE 0-9 (5)'],
+        ['8', 'INTENSITÀ LCD 0-15 (8)'],
+        ['9', 'NUMERO CASSA (0)'],
+        ['10', 'INDIRIZZO RETE (40)'],
+        ['11', 'LOGO A INIZIO SCONTRINO 1-10 (0)'],
+        ['12', 'LOGO A FINE SCONTRINO 1-10 (0)'],
+        ['15', 'ORA CHIUSURA FISCALE (0)'],
+        ['16', 'SECONDI VISUALIZZAZIONE DATA/ORA (10)'],
+        ['17', 'TAGLIERINA 0 NO / 1 PARZIALE / 2 TOTALE (0)'],
+        ['18', 'MODO TASTO CREDITO (0)'],
+        ['19', 'MODO TASTO BANCOMAT (0)'],
+        ['20', 'TIPO PROTOCOLLO PC (0)'],
+        ['22', 'RITARDO INVIO PENDENZE IN MINUTI (0)'],
+        ['23', 'SCONTRINO DIGITALE 0 OFF / 1 SU RICHIESTA / 2 SEMPRE / 3 STAMPA + DIGITALE (0)'],
+        ['24', 'TRASMISSIONE DOC. DIGITALE (0)'],
+        ['25', 'ERRORE UPLOAD DOC. DIGITALE 0 STAMPA COPIA / 1 SILENTE (0)'],
+        ['27', 'SECONDI VISUALIZZAZIONE QR (2)'],
+        ['28', 'IMPORTO MINIMO LOTTERIA (100 = 1 €)'],
+        ['29', 'PAGAMENTO PER LOTTERIA (ELETTRONICO)'],
+        ['33', 'ASSISTENZA CLOUD 0 OFF / 1 MANUALE / 2 AUTOMATICA (1)'],
+        ['34', 'STAMPA AZZERAMENTO 0 CARTA / 1 PDF / 2 ENTRAMBI (0)'],
+        ['35', 'STAMPA AZZERAMENTO AUTOMATICO 0 CARTA / 1 PDF / 2 ENTRAMBI (0)']
+      ] }
+    ]
+  }
+];
+
 const FUNCTION_PAGES = [
   {
     id: 'custom',
@@ -1899,5 +2356,12 @@ const FUNCTION_PAGES = [
     meta: 'Funzioni utili con la sequenza dei tasti',
     intro: 'Funzioni utili delle casse Emotiq. SBT = subtotale.',
     sections: EMOTIQ_FUNCTIONS
+  },
+  {
+    id: 'labware',
+    name: 'Funzioni Labware Basiq',
+    meta: 'Codici X, Z, SET, opzioni e tasti in REG',
+    intro: 'Codici della Labware Basiq dal manuale utente (ver. 5.05). Chiave 1 = X, Chiave 2 = Z, Chiave 3 = SET.',
+    sections: LABWARE_FUNCTIONS
   }
 ];
