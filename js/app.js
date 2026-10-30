@@ -222,9 +222,35 @@
         '<span class="printer-go">' + ICON.arrow + '</span>' +
       '</a>';
     }
-    var cards = categories().map(function (b) {
-      return '<div class="list-title">' + esc(b.name) + '</div>' + b.items.map(card).join('');
-    }).join('');
+    function fnCard(f) {
+      return '<a class="printer-card" href="#/funzioni/' + f.id + '">' +
+        '<span class="printer-icon">' + ICON.list + '</span>' +
+        '<span class="printer-body">' +
+          '<span class="printer-name">' + esc(f.name) + '</span>' +
+          '<span class="printer-meta">' + esc(f.meta) + '</span>' +
+        '</span>' +
+        '<span class="printer-go">' + ICON.arrow + '</span>' +
+      '</a>';
+    }
+    // Categoria chiusa: si apre al tocco e mostra le procedure
+    function group(name, count, inProgress, body) {
+      return '<details class="cat"' + (openCats[name] ? ' open' : '') + ' data-cat="' + esc(name) + '">' +
+        '<summary class="cat-head">' +
+          '<span class="cat-body">' +
+            '<span class="cat-name">' + esc(name) + '</span>' +
+            '<span class="printer-meta">' + count + (count === 1 ? ' procedura' : ' procedure') + '</span>' +
+            (inProgress ? '<span class="badge">' + inProgress + ' in corso</span>' : '') +
+          '</span>' +
+          '<span class="cat-chevron">' + ICON.arrow + '</span>' +
+        '</summary>' +
+        '<div class="cat-items">' + body + '</div>' +
+      '</details>';
+    }
+    var cards = categories().map(function (c) {
+      var inProgress = c.items.filter(function (p) { return progressOf(p.id); }).length;
+      return group(c.name, c.items.length, inProgress, c.items.map(card).join(''));
+    }).join('') +
+      group('Consultazione', FUNCTION_PAGES.length, 0, FUNCTION_PAGES.map(fnCard).join(''));
 
     return '<div class="screen home">' +
       topbar() +
@@ -233,19 +259,7 @@
         '<h1>Quale procedura vuoi seguire?</h1>' +
         '<p class="lead">Segui la procedura passo per passo. Conferma ogni step con la V verde.</p>' +
       '</header>' +
-      '<main class="printer-list">' + cards +
-        '<div class="list-title">Consultazione</div>' +
-        FUNCTION_PAGES.map(function (f) {
-          return '<a class="printer-card" href="#/funzioni/' + f.id + '">' +
-            '<span class="printer-icon">' + ICON.list + '</span>' +
-            '<span class="printer-body">' +
-              '<span class="printer-name">' + esc(f.name) + '</span>' +
-              '<span class="printer-meta">' + esc(f.meta) + '</span>' +
-            '</span>' +
-            '<span class="printer-go">' + ICON.arrow + '</span>' +
-          '</a>';
-        }).join('') +
-      '</main>' +
+      '<main class="printer-list">' + cards + '</main>' +
     '</div>';
   }
 
@@ -432,6 +446,7 @@
   // ---------- Router ----------
 
   var lastStep = { id: null, i: -1 };
+  var openCats = {}; // categorie aperte in home, ricordate finché l'app resta aperta
   var lastResult = null;
 
   function route() {
@@ -554,6 +569,12 @@
       }
     }
   });
+
+  // toggle non risale (bubble): si ascolta in fase di cattura
+  app.addEventListener('toggle', function (e) {
+    var cat = e.target.getAttribute && e.target.getAttribute('data-cat');
+    if (cat) openCats[cat] = e.target.open;
+  }, true);
 
   app.addEventListener('input', function (e) {
     if (e.target.hasAttribute && e.target.hasAttribute('data-filter')) return filterFunctions();
