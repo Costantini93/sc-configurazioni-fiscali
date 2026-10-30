@@ -592,6 +592,7 @@ const PRINTERS = [
     summary: 'Disattivazione dal menu tecnico dei servizi telematici.',
     legend: [
       { tok: { key: true }, text: 'Tasto chiave' },
+      { tok: { k: 'PROGRAMMAZIONE' }, text: 'Tasto programmazione' },
       { tok: { k: 'SUBTOT' }, text: 'Conferma (SBT)' },
       { tok: { n: '00' }, text: 'Sposta tra le opzioni' }
     ],
@@ -601,7 +602,7 @@ const PRINTERS = [
         title: 'Servizi telematici',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ key: true }, { n: '699' }, { k: 'SUBTOT' }] }
+          { type: 'seq', seq: [{ key: true }, { k: 'PROGRAMMAZIONE' }, { n: '699' }, { k: 'SUBTOT' }] }
         ]
       },
       {
