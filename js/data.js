@@ -813,6 +813,25 @@ const PRINTERS = [
     ]
   },
 
+  {
+    id: 'labware-disattivazione',
+    name: 'Disattivazione Labware Smart RT / Basic',
+    brand: 'Labware',
+    category: 'Disattivazione',
+    menu: 'Labware Smart RT / Basic',
+    summary: 'Disattivazione della cassa.',
+    steps: [
+      {
+        phase: 'Disattivazione',
+        title: 'Disattiva la cassa',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '55' }, { k: 'ANNULLO' }] }
+        ]
+      }
+    ]
+  },
+
   // ---------- 3i ----------
 
   {
@@ -1518,6 +1537,32 @@ function stepsFrom(id, first, last, phase) {
 }
 
 PRINTERS.push(
+  {
+    id: 'labware-cambio-rs',
+    name: 'Cambio ragione sociale Labware Smart RT',
+    brand: 'Labware',
+    category: 'Cambio ragione sociale',
+    menu: 'Labware Smart RT',
+    summary: 'Chiusura, disattivazione, sostituzione e inizializzazione DGFE, attivazione, nuova configurazione, aggiornamenti e verifica.',
+    needs: [
+      'DGFE nuova',
+      'Piombo',
+      'C.F. del tecnico e P.IVA di S.C.',
+      'PC con la React app',
+      'Dati della nuova ragione sociale'
+    ],
+    legend: PRINTERS.filter(function (p) { return p.id === 'smart'; })[0].legend,
+    steps: [].concat(
+      stepsFrom('labware-dgfe', 'Chiusura fiscale', 'Chiusura fiscale', 'Chiusura cassa'),
+      stepsFrom('labware-disattivazione', 'Disattiva la cassa', 'Disattiva la cassa', 'Disattivazione'),
+      stepsFrom('labware-dgfe', 'Spegni la macchina', 'Rimonta la macchina', 'DGFE'),
+      stepsFrom('labware-basic', 'Attivazione', 'Attivazione', 'Attivazione cassa'),
+      stepsFrom('smart', 'Nuovo modello', 'Configura la stampante', 'Nuova intestazione'),
+      stepsFrom('smart', 'Aggiornamento tastiera', 'Aggiornamento software', 'Aggiornamento e verifica'),
+      stepsFrom('smart', 'Scontrini di prova', 'Procedura finale', 'Aggiornamento e verifica')
+    )
+  },
+
   {
     id: 'custom-big-cambio-rs',
     name: 'Cambio ragione sociale Custom Big',
