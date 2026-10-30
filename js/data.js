@@ -45,6 +45,7 @@ const CATEGORIES = [
   'Verifica periodica',
   'Sostituzione DGFE',
   'Annullo scontrino',
+  'Disattivazione',
   'Assistenza',
   'Altre procedure'
 ];
@@ -577,6 +578,73 @@ const PRINTERS = [
         blocks: [
           { type: 'seq', seq: [{ n: '0' }, { k: 'SUBTOT' }] },
           { type: 'note', kind: 'info', text: 'Stampa l\'elenco di tutto quello che si può fare in programmazione.' }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'custom-big-disattivazione',
+    name: 'Disattivazione Custom Big',
+    brand: 'Custom',
+    category: 'Disattivazione',
+    menu: 'Custom Big',
+    summary: 'Disattivazione dal menu tecnico dei servizi telematici.',
+    legend: [
+      { tok: { key: true }, text: 'Tasto chiave' },
+      { tok: { k: 'SUBTOT' }, text: 'Conferma (SBT)' },
+      { tok: { n: '00' }, text: 'Sposta tra le opzioni' }
+    ],
+    steps: [
+      {
+        phase: 'Menu tecnico',
+        title: 'Servizi telematici',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '699' }, { k: 'SUBTOT' }] }
+        ]
+      },
+      {
+        phase: 'Menu tecnico',
+        title: 'Menu tecnico',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ m: 'MENU TECNICO' }, { k: 'SUBTOT' }] }
+        ]
+      },
+      {
+        phase: 'Disattivazione',
+        title: 'Evento',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '00', cap: 'fino a EVENTO' }, { m: 'EVENTO' }, { k: 'SUBTOT' }] }
+        ]
+      },
+      {
+        phase: 'Disattivazione',
+        title: 'Disattivazione',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '00', cap: 'fino a DISATTIVAZIONE' }, { m: 'DISATTIVAZIONE' }, { k: 'SUBTOT' }] }
+        ]
+      },
+      {
+        phase: 'Disattivazione',
+        title: 'Codice e note',
+        where: 'printer',
+        blocks: [
+          { type: 'table', head: ['Campo', 'Valore'], rows: [
+            ['Codice', 'ALTRO'],
+            ['Note', 'Vuoto, oppure il motivo (es. chiusura attività)']
+          ] }
+        ]
+      },
+      {
+        phase: 'Conferma',
+        title: 'Conferma',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '00', cap: 'fino a SÌ' }, { m: 'SÌ' }, { k: 'SUBTOT' }] }
         ]
       }
     ]
@@ -1334,8 +1402,8 @@ const PRINTERS = [
     id: 'emotiq-disattivazione',
     name: 'Disattivazione Emotiq',
     brand: 'Emotiq',
-    category: 'Altre procedure',
-    menu: 'Emotiq · Disattivazione',
+    category: 'Disattivazione',
+    menu: 'Emotiq',
     summary: 'Chiusura e disattivazione della cassa.',
     needs: ['C.F. del tecnico e P.IVA del laboratorio'],
     legend: EMOTIQ_LEGEND,
