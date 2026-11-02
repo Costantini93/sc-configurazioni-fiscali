@@ -2,8 +2,8 @@
  * Guide di configurazione delle stampanti fiscali.
  *
  * Per aggiungere una procedura basta aggiungere un oggetto all'array PRINTERS.
- * Nel menu e in home le procedure sono raggruppate per categoria (category, una di CATEGORIES)
- * e mostrate con il nome breve menu (di solito la stampante).
+ * printer: marca e modello (uno di PRINTER_MODELS, oppure un array se la procedura vale per più modelli)
+ * op: tipo di operazione (uno di OPERATIONS). Menu e home si costruiscono da questi due campi.
  * needs (cosa serve) e legend (legenda tasti) sono facoltativi.
  *
  * Ogni step ha:
@@ -47,16 +47,33 @@ const EMOTIQ_ANNULLO = [
   { t: 'n. documento', cap: '8 cifre, senza il -' }, { k: 'SBT' }, { k: 'SBT' }
 ];
 
-// Categorie del menu e della home, in quest'ordine
-const CATEGORIES = [
+// Stampanti (marca e modello) e operazioni, nell'ordine in cui compaiono nel menu e in home
+const PRINTER_MODELS = [
+  'Custom Big',
+  'Labware Smart RT',
+  'Labware Basiq',
+  '3i RT 30 / RT 40',
+  'Emotiq Nota / Model M / Opera 57',
+  'Epson',
+  'RCH Print F'
+];
+
+const OPERATIONS = [
   'Preparazione',
   'Verifica periodica',
-  'Sostituzione DGFE',
   'Annullo scontrino',
-  'Disattivazione',
+  'Sostituzione DGFE',
+  'Estensione DGFE',
   'Cambio ragione sociale',
-  'Assistenza',
-  'Altre procedure'
+  'Disattivazione',
+  'Registrazione intervento',
+  'Aggiornamento firmware',
+  'Corrispettivi non inviati',
+  'Opera non invia',
+  'Ripristino Opera',
+  'Fuori servizio',
+  'Programmazione nuovo tasto',
+  'Tastierino K3'
 ];
 
 const PRINTERS = [
@@ -64,8 +81,8 @@ const PRINTERS = [
     id: 'custom-big',
     name: 'Configurazione Custom Big',
     brand: 'Custom',
-    category: 'Preparazione',
-    menu: 'Custom Big',
+    printer: 'Custom Big',
+    op: 'Preparazione',
     summary: 'Fiscalizzazione, censimento, attivazione, configurazione con RX Config e verifica finale.',
     needs: [
       'Stampante collegata alla rete con cavo Ethernet',
@@ -268,8 +285,8 @@ const PRINTERS = [
     id: 'smart',
     name: 'Preparazione Smart RT',
     brand: 'Labware',
-    category: 'Preparazione',
-    menu: 'Labware Smart RT',
+    printer: 'Labware Smart RT',
+    op: 'Preparazione',
     summary: 'Data e ora, censimento, aggiornamenti, configurazione con la React app e verifica finale.',
     needs: [
       'Stampante accesa e collegata alla rete',
@@ -412,8 +429,8 @@ const PRINTERS = [
     id: 'custom-verifica',
     name: 'Verifica periodica Custom',
     brand: 'Custom',
-    category: 'Verifica periodica',
-    menu: 'Custom',
+    printer: 'Custom Big',
+    op: 'Verifica periodica',
     summary: 'QR code, chiusura, aggiornamento firmware, scontrini di prova con annullo, registrazione intervento.',
     steps: [
       {
@@ -505,8 +522,8 @@ const PRINTERS = [
     id: 'custom-registrazione',
     name: 'Registrazione intervento Custom',
     brand: 'Custom',
-    category: 'Altre procedure',
-    menu: 'Custom · Registrazione intervento',
+    printer: 'Custom Big',
+    op: 'Registrazione intervento',
     summary: 'Chiusura e registrazione dell\'intervento tecnico.',
     steps: [
       {
@@ -541,8 +558,8 @@ const PRINTERS = [
     id: 'custom-annullo',
     name: 'Annullo scontrino Custom',
     brand: 'Custom',
-    category: 'Annullo scontrino',
-    menu: 'Custom',
+    printer: 'Custom Big',
+    op: 'Annullo scontrino',
     summary: 'Annullamento di uno scontrino.',
     steps: [
       {
@@ -562,8 +579,8 @@ const PRINTERS = [
     id: 'custom-k3',
     name: 'Tastierino K3',
     brand: 'Custom',
-    category: 'Altre procedure',
-    menu: 'Custom · Tastierino K3',
+    printer: 'Custom Big',
+    op: 'Tastierino K3',
     summary: 'Passaggio da FPU a LOCAL e stampa dell\'elenco delle programmazioni.',
     steps: [
       {
@@ -596,8 +613,8 @@ const PRINTERS = [
     id: 'custom-big-disattivazione',
     name: 'Disattivazione Custom Big',
     brand: 'Custom',
-    category: 'Disattivazione',
-    menu: 'Custom Big',
+    printer: 'Custom Big',
+    op: 'Disattivazione',
     summary: 'Disattivazione dal menu tecnico dei servizi telematici.',
     legend: [
       { tok: { key: true }, text: 'Tasto chiave' },
@@ -666,8 +683,8 @@ const PRINTERS = [
     id: 'labware-dgfe',
     name: 'Sostituzione DGFE Smart RT',
     brand: 'Labware',
-    category: 'Sostituzione DGFE',
-    menu: 'Labware Smart RT',
+    printer: 'Labware Smart RT',
+    op: 'Sostituzione DGFE',
     summary: 'Chiusura, sostituzione fisica della DGFE, inizializzazione, registrazione intervento e verifica.',
     needs: [
       'DGFE nuova',
@@ -769,8 +786,8 @@ const PRINTERS = [
     id: 'labware-basic',
     name: 'Preparazione Labware Basiq',
     brand: 'Labware',
-    category: 'Preparazione',
-    menu: 'Labware Basiq',
+    printer: 'Labware Basiq',
+    op: 'Preparazione',
     summary: 'Data e ora, rete, censimento, attivazione, aggiornamenti, intestazione, aliquote IVA e reparti.',
     needs: [
       'Cassa collegata a internet (porta LAN1)',
@@ -922,8 +939,8 @@ const PRINTERS = [
     id: 'labware-disattivazione',
     name: 'Disattivazione Labware Smart RT / Basiq',
     brand: 'Labware',
-    category: 'Disattivazione',
-    menu: 'Labware Smart RT / Basiq',
+    printer: ['Labware Smart RT', 'Labware Basiq'],
+    op: 'Disattivazione',
     summary: 'Disattivazione della cassa all\'Agenzia delle Entrate.',
     needs: ['C.F. del tecnico abilitato e P.IVA del centro assistenza'],
     steps: [
@@ -948,8 +965,8 @@ const PRINTERS = [
     id: 'labware-annullo',
     name: 'Annullo scontrino Labware Basiq',
     brand: 'Labware',
-    category: 'Annullo scontrino',
-    menu: 'Labware Basiq',
+    printer: 'Labware Basiq',
+    op: 'Annullo scontrino',
     summary: 'Documento commerciale di annullamento di uno scontrino già emesso.',
     legend: LABWARE_LEGEND,
     steps: [
@@ -997,8 +1014,8 @@ const PRINTERS = [
     id: 'labware-pendenti',
     name: 'Corrispettivi non inviati Labware Basiq',
     brand: 'Labware',
-    category: 'Assistenza',
-    menu: 'Labware · Corrispettivi non inviati',
+    printer: 'Labware Basiq',
+    op: 'Corrispettivi non inviati',
     summary: 'Controllo e invio forzato dei corrispettivi e delle lotterie pendenti.',
     legend: LABWARE_LEGEND,
     steps: [
@@ -1046,8 +1063,8 @@ const PRINTERS = [
     id: 'labware-fuori-servizio',
     name: 'Fuori servizio Labware Basiq',
     brand: 'Labware',
-    category: 'Altre procedure',
-    menu: 'Labware Basiq · Fuori servizio',
+    printer: 'Labware Basiq',
+    op: 'Fuori servizio',
     summary: 'Segnalazione di fuori servizio all\'Agenzia delle Entrate (inattività o guasto).',
     legend: LABWARE_LEGEND,
     steps: [
@@ -1076,8 +1093,8 @@ const PRINTERS = [
     id: '3i-verifica',
     name: 'Verifica periodica RT 30 / RT 40',
     brand: '3i',
-    category: 'Verifica periodica',
-    menu: '3i RT 30 / RT 40',
+    printer: '3i RT 30 / RT 40',
+    op: 'Verifica periodica',
     summary: 'Chiusura, corrispettivi, connessione, scontrini di prova con annullo e registrazione intervento.',
     needs: ['C.F. del tecnico e P.IVA di S.C.'],
     steps: [
@@ -1162,8 +1179,8 @@ const PRINTERS = [
     id: '3i-dgfe',
     name: 'Sostituzione DGFE RT 30 / RT 40',
     brand: '3i',
-    category: 'Sostituzione DGFE',
-    menu: '3i RT 30 / RT 40',
+    printer: '3i RT 30 / RT 40',
+    op: 'Sostituzione DGFE',
     summary: 'Chiusura, sostituzione fisica della DGFE, inizializzazione e report di verifica.',
     needs: ['DGFE nuova', 'Piombo'],
     steps: [
@@ -1232,8 +1249,8 @@ const PRINTERS = [
     id: 'emotiq-attivazione',
     name: 'Attivazione Nota 2',
     brand: 'Emotiq',
-    category: 'Preparazione',
-    menu: 'Emotiq Nota 2',
+    printer: 'Emotiq Nota / Model M / Opera 57',
+    op: 'Preparazione',
     summary: 'Connessione Wi-Fi, test di rete, configurazione con Emotiq Tools, verifica IVA e QR code.',
     needs: [
       'PC con Emotiq Tools',
@@ -1344,8 +1361,8 @@ const PRINTERS = [
     id: 'emotiq-verifica',
     name: 'Verifica periodica Nota / Model M / Opera 57',
     brand: 'Emotiq',
-    category: 'Verifica periodica',
-    menu: 'Emotiq Nota / Model M / Opera 57',
+    printer: 'Emotiq Nota / Model M / Opera 57',
+    op: 'Verifica periodica',
     summary: 'QR code, chiusura, test di rete, scontrini di prova con annullo, registrazione della verifica e check-list.',
     needs: ['C.F. del tecnico e P.IVA del laboratorio', 'Check-list della verifica'],
     legend: EMOTIQ_LEGEND,
@@ -1463,8 +1480,8 @@ const PRINTERS = [
     id: 'emotiq-dgfe',
     name: 'Estensione DGFE Emotiq',
     brand: 'Emotiq',
-    category: 'Sostituzione DGFE',
-    menu: 'Emotiq (estensione)',
+    printer: 'Emotiq Nota / Model M / Opera 57',
+    op: 'Estensione DGFE',
     summary: 'Estensione della DGFE dall\'app, scaricamento con la chiusura e controllo finale.',
     needs: ['Telefono con l\'app / portale EmotiqMe', 'Matricola della macchina'],
     legend: EMOTIQ_LEGEND,
@@ -1520,8 +1537,8 @@ const PRINTERS = [
     id: 'emotiq-annullo',
     name: 'Annullo scontrino Emotiq',
     brand: 'Emotiq',
-    category: 'Annullo scontrino',
-    menu: 'Emotiq',
+    printer: 'Emotiq Nota / Model M / Opera 57',
+    op: 'Annullo scontrino',
     summary: 'Annullamento di uno scontrino, con ristampa se il cliente non ha lo scontrino.',
     legend: EMOTIQ_LEGEND,
     steps: [
@@ -1554,8 +1571,8 @@ const PRINTERS = [
     id: 'emotiq-ripristino',
     name: 'Ripristino Opera',
     brand: 'Emotiq',
-    category: 'Assistenza',
-    menu: 'Emotiq · Ripristino Opera',
+    printer: 'Emotiq Nota / Model M / Opera 57',
+    op: 'Ripristino Opera',
     summary: 'Reimpostazione di data, ora e dati fiscali dopo un reset della cassa.',
     needs: ['C.F. e P.IVA del cliente'],
     legend: EMOTIQ_LEGEND,
@@ -1600,8 +1617,8 @@ const PRINTERS = [
     id: 'emotiq-non-invia',
     name: 'Opera non invia',
     brand: 'Emotiq',
-    category: 'Assistenza',
-    menu: 'Emotiq · Opera non invia',
+    printer: 'Emotiq Nota / Model M / Opera 57',
+    op: 'Opera non invia',
     summary: 'Controllo della rete, ricollegamento e invio dei corrispettivi sospesi.',
     needs: ['Nome (SSID) e password della rete del cliente'],
     legend: EMOTIQ_LEGEND,
@@ -1661,8 +1678,8 @@ const PRINTERS = [
     id: 'emotiq-disattivazione',
     name: 'Disattivazione Emotiq',
     brand: 'Emotiq',
-    category: 'Disattivazione',
-    menu: 'Emotiq',
+    printer: 'Emotiq Nota / Model M / Opera 57',
+    op: 'Disattivazione',
     summary: 'Chiusura e disattivazione della cassa.',
     needs: ['C.F. del tecnico e P.IVA del laboratorio'],
     legend: EMOTIQ_LEGEND,
@@ -1694,8 +1711,8 @@ const PRINTERS = [
     id: 'epson-annullo',
     name: 'Annullo scontrino Epson',
     brand: 'Epson',
-    category: 'Annullo scontrino',
-    menu: 'Epson',
+    printer: 'Epson',
+    op: 'Annullo scontrino',
     summary: 'Annullamento di uno scontrino.',
     steps: [
       {
@@ -1724,8 +1741,8 @@ const PRINTERS = [
     id: 'rch-tasto',
     name: 'Programmazione nuovo tasto RCH Print F',
     brand: 'RCH',
-    category: 'Altre procedure',
-    menu: 'RCH Print F · Nuovo tasto',
+    printer: 'RCH Print F',
+    op: 'Programmazione nuovo tasto',
     summary: 'Assegnazione di una funzione a un tasto.',
     steps: [
       {
@@ -1760,8 +1777,8 @@ const PRINTERS = [
     id: 'rch-firmware',
     name: 'Aggiornamento firmware RCH',
     brand: 'RCH',
-    category: 'Altre procedure',
-    menu: 'RCH · Aggiornamento firmware',
+    printer: 'RCH Print F',
+    op: 'Aggiornamento firmware',
     summary: 'Controllo di data e ora, file di verifica da RCH x Dealer e aggiornamento in LAN.',
     needs: [
       'Credenziali RCH x Dealer',
@@ -1817,8 +1834,8 @@ const PRINTERS = [
     id: 'rch-verifica',
     name: 'Verifica periodica RCH',
     brand: 'RCH',
-    category: 'Verifica periodica',
-    menu: 'RCH',
+    printer: 'RCH Print F',
+    op: 'Verifica periodica',
     summary: 'Scontrini di prova con annullo e registrazione della verifica periodica.',
     steps: [
       {
@@ -1901,8 +1918,8 @@ PRINTERS.push(
     id: 'labware-cambio-rs',
     name: 'Cambio ragione sociale Labware Smart RT',
     brand: 'Labware',
-    category: 'Cambio ragione sociale',
-    menu: 'Labware Smart RT',
+    printer: 'Labware Smart RT',
+    op: 'Cambio ragione sociale',
     summary: 'Chiusura, disattivazione, sostituzione e inizializzazione DGFE, attivazione, nuova configurazione, aggiornamenti e verifica.',
     needs: [
       'DGFE nuova',
@@ -1927,8 +1944,8 @@ PRINTERS.push(
     id: 'custom-big-cambio-rs',
     name: 'Cambio ragione sociale Custom Big',
     brand: 'Custom',
-    category: 'Cambio ragione sociale',
-    menu: 'Custom Big',
+    printer: 'Custom Big',
+    op: 'Cambio ragione sociale',
     summary: 'Chiusura, disattivazione, sostituzione e attivazione DGFE, attivazione, nuova intestazione, aggiornamento e verifica.',
     needs: [
       'DGFE nuova',
@@ -1960,8 +1977,8 @@ PRINTERS.push(
     id: 'emotiq-cambio-rs',
     name: 'Cambio ragione sociale Emotiq',
     brand: 'Emotiq',
-    category: 'Cambio ragione sociale',
-    menu: 'Emotiq',
+    printer: 'Emotiq Nota / Model M / Opera 57',
+    op: 'Cambio ragione sociale',
     summary: 'Chiusura, disattivazione, estensione DGFE, attivazione, nuova intestazione, aggiornamento e verifica.',
     needs: [
       'PC con Emotiq Tools',
@@ -2467,6 +2484,7 @@ const LABWARE_FUNCTIONS = [
 const FUNCTION_PAGES = [
   {
     id: 'custom',
+    printer: 'Custom Big',
     name: 'Funzioni Custom',
     meta: 'Codici report X, programmazioni e azzeramenti Z',
     intro: 'Elenco dei codici disponibili sulla cassa Custom.',
@@ -2474,6 +2492,7 @@ const FUNCTION_PAGES = [
   },
   {
     id: 'emotiq',
+    printer: 'Emotiq Nota / Model M / Opera 57',
     name: 'Funzioni Emotiq',
     meta: 'Funzioni utili con la sequenza dei tasti',
     intro: 'Funzioni utili delle casse Emotiq. SBT = subtotale.',
@@ -2481,6 +2500,7 @@ const FUNCTION_PAGES = [
   },
   {
     id: 'labware',
+    printer: 'Labware Basiq',
     name: 'Funzioni Labware Basiq',
     meta: 'Codici X, Z, SET, opzioni e tasti in REG',
     intro: 'Codici della Labware Basiq dal manuale utente (ver. 5.05). Chiave 1 = X, Chiave 2 = Z, Chiave 3 = SET.',

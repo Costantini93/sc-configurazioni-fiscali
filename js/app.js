@@ -106,11 +106,21 @@
     '</header>';
   }
 
-  // Procedure raggruppate per categoria, nell'ordine di CATEGORIES
-  function categories() {
-    return CATEGORIES.map(function (name) {
-      return { name: name, items: PRINTERS.filter(function (p) { return p.category === name; }) };
-    }).filter(function (c) { return c.items.length; });
+  // ---------- Stampanti e operazioni ----------
+
+  var FN_OP = 'Codici e funzioni';
+
+  function printersOf(p) { return [].concat(p.printer); }
+  function printerLabel(p) { return printersOf(p).join(' / '); }
+
+  // Operazioni disponibili per un modello: procedure (in ordine di OPERATIONS) e pagine dei codici
+  function opsFor(model) {
+    var procs = PRINTERS.filter(function (p) { return printersOf(p).indexOf(model) !== -1; })
+      .sort(function (a, b) { return OPERATIONS.indexOf(a.op) - OPERATIONS.indexOf(b.op); })
+      .map(function (p) { return { label: p.op, href: '#/p/' + p.id, p: p }; });
+    var fns = FUNCTION_PAGES.filter(function (f) { return f.printer === model; })
+      .map(function (f) { return { label: FN_OP, href: '#/funzioni/' + f.id, f: f }; });
+    return procs.concat(fns);
   }
 
   // ---------- Menu laterale ----------
@@ -123,15 +133,13 @@
       return '<a class="nav-link" href="' + href + '">' + esc(label) + '</a>';
     }
     nav.innerHTML =
-      '<div class="nav-head"><span class="nav-title">Procedure</span>' +
+      '<div class="nav-head"><span class="nav-title">Stampanti</span>' +
         '<button class="icon-btn nav-close" data-action="close-nav" aria-label="Chiudi il menu">' + ICON.close + '</button></div>' +
       '<a class="nav-link nav-home" href="#/">Home</a>' +
-      categories().map(function (c) {
-        return '<details class="nav-group" open><summary>' + esc(c.name) + '</summary>' +
-          c.items.map(function (p) { return link('#/p/' + p.id, p.menu); }).join('') + '</details>';
-      }).join('') +
-      '<details class="nav-group" open><summary>Consultazione</summary>' +
-        FUNCTION_PAGES.map(function (f) { return link('#/funzioni/' + f.id, f.name); }).join('') + '</details>';
+      PRINTER_MODELS.map(function (model) {
+        return '<details class="nav-group"><summary>' + esc(model) + '</summary>' +
+          opsFor(model).map(function (o) { return link(o.href, o.label); }).join('') + '</details>';
+      }).join('');
   }
 
   // Evidenzia la voce della pagina aperta (anche dentro una procedura)
@@ -142,6 +150,9 @@
       var on = a.getAttribute('href') === current;
       a.classList.toggle('is-active', on);
       if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+      // apre la stampante della pagina aperta (le altre restano come le ha lasciate l'utente)
+      var group = a.closest('details');
+      if (on && group) group.open = true;
     });
   }
 
@@ -212,66 +223,87 @@
 
   // ---------- Schermate ----------
 
+  function procCard(p, title) {
+    var pr = progressOf(p.id);
+    var nPhases = phasesOf(p).length;
+    var badge = pr ? '<span class="badge">In corso · step ' + (pr.step + 1) + ' di ' + p.steps.length + '</span>' : '';
+    return '<a class="printer-card" href="#/p/' + p.id + '">' +
+      '<span class="printer-icon">' + ICON.printer + '</span>' +
+      '<span class="printer-body">' +
+        '<span class="printer-name">' + esc(title || p.name) + '</span>' +
+        '<span class="printer-meta">' + p.steps.length + ' step · ' + nPhases + (nPhases === 1 ? ' fase' : ' fasi') + '</span>' +
+        badge +
+      '</span>' +
+      '<span class="printer-go">' + ICON.arrow + '</span>' +
+    '</a>';
+  }
+  function fnCard(f) {
+    return '<a class="printer-card" href="#/funzioni/' + f.id + '">' +
+      '<span class="printer-icon">' + ICON.list + '</span>' +
+      '<span class="printer-body">' +
+        '<span class="printer-name">' + esc(f.name) + '</span>' +
+        '<span class="printer-meta">' + esc(f.meta) + '</span>' +
+      '</span>' +
+      '<span class="printer-go">' + ICON.arrow + '</span>' +
+    '</a>';
+  }
+
+  // Opzioni del secondo menu a tendina, per il modello scelto
+  function opOptions(model, selected) {
+    return '<option value="">' + (model ? 'Scegli l\'operazione' : 'Prima scegli la stampante') + '</option>' +
+      (model ? opsFor(model).map(function (o) {
+        return '<option value="' + esc(o.href) + '"' + (o.href === selected ? ' selected' : '') + '>' + esc(o.label) + '</option>';
+      }).join('') : '');
+  }
+  function pickResult() {
+    if (!homePick.href) return '';
+    var o = opsFor(homePick.printer).filter(function (x) { return x.href === homePick.href; })[0];
+    if (!o) return '';
+    return o.p ? procCard(o.p) + '<p class="pick-summary">' + esc(o.p.summary) + '</p>' : fnCard(o.f);
+  }
+
   function viewHome() {
-    function card(p) {
-      var pr = progressOf(p.id);
-      var nPhases = phasesOf(p).length;
-      var badge = pr ? '<span class="badge">In corso · step ' + (pr.step + 1) + ' di ' + p.steps.length + '</span>' : '';
-      return '<a class="printer-card" href="#/p/' + p.id + '">' +
-        '<span class="printer-icon">' + ICON.printer + '</span>' +
-        '<span class="printer-body">' +
-          '<span class="printer-name">' + esc(p.menu) + '</span>' +
-          '<span class="printer-meta">' + p.steps.length + ' step · ' + nPhases + (nPhases === 1 ? ' fase' : ' fasi') + '</span>' +
-          badge +
-        '</span>' +
-        '<span class="printer-go">' + ICON.arrow + '</span>' +
-      '</a>';
-    }
-    function fnCard(f) {
-      return '<a class="printer-card" href="#/funzioni/' + f.id + '">' +
-        '<span class="printer-icon">' + ICON.list + '</span>' +
-        '<span class="printer-body">' +
-          '<span class="printer-name">' + esc(f.name) + '</span>' +
-          '<span class="printer-meta">' + esc(f.meta) + '</span>' +
-        '</span>' +
-        '<span class="printer-go">' + ICON.arrow + '</span>' +
-      '</a>';
-    }
-    // Categoria chiusa: si apre al tocco e mostra le procedure
-    function group(name, count, inProgress, body) {
-      return '<details class="cat"' + (openCats[name] ? ' open' : '') + ' data-cat="' + esc(name) + '">' +
-        '<summary class="cat-head">' +
-          '<span class="cat-body">' +
-            '<span class="cat-name">' + esc(name) + '</span>' +
-            '<span class="printer-meta">' + count + (count === 1 ? ' procedura' : ' procedure') + '</span>' +
-            (inProgress ? '<span class="badge">' + inProgress + ' in corso</span>' : '') +
-          '</span>' +
-          '<span class="cat-chevron">' + ICON.arrow + '</span>' +
-        '</summary>' +
-        '<div class="cat-items">' + body + '</div>' +
-      '</details>';
-    }
-    var cards = categories().map(function (c) {
-      var inProgress = c.items.filter(function (p) { return progressOf(p.id); }).length;
-      return group(c.name, c.items.length, inProgress, c.items.map(card).join(''));
-    }).join('') +
-      group('Consultazione', FUNCTION_PAGES.length, 0, FUNCTION_PAGES.map(fnCard).join(''));
+    var inProgress = PRINTERS.filter(function (p) { return progressOf(p.id); });
 
     return '<div class="screen home">' +
       topbar() +
       '<header class="hero">' +
         '<div class="brand-name">Configurazioni fiscali</div>' +
         '<h1>Quale procedura vuoi seguire?</h1>' +
-        '<p class="lead">Segui la procedura passo per passo. Conferma ogni step con la V verde.</p>' +
+        '<p class="lead">Scegli la stampante e l\'operazione. Conferma ogni step con la V verde.</p>' +
       '</header>' +
       '<main class="printer-list">' +
+        '<section class="picker">' +
+          '<label class="pick-field"><span class="field-label">Marca e modello</span>' +
+            '<select data-pick="printer"><option value="">Scegli la stampante</option>' +
+              PRINTER_MODELS.map(function (m) {
+                return '<option' + (m === homePick.printer ? ' selected' : '') + '>' + esc(m) + '</option>';
+              }).join('') +
+            '</select></label>' +
+          '<label class="pick-field"><span class="field-label">Operazione</span>' +
+            '<select data-pick="op"' + (homePick.printer ? '' : ' disabled') + '>' + opOptions(homePick.printer, homePick.href) + '</select></label>' +
+          '<div class="pick-result">' + pickResult() + '</div>' +
+        '</section>' +
+        (inProgress.length ? '<div class="list-title">In corso</div>' + inProgress.map(function (p) { return procCard(p); }).join('') : '') +
+        '<div class="list-title">Oppure cerca</div>' +
         '<label class="fn-search home-search">' + ICON.search +
           '<input type="search" data-home-search placeholder="Cerca procedura, codice o passaggio" autocomplete="off" aria-label="Cerca nelle procedure" value="' + esc(homeQuery) + '">' +
         '</label>' +
-        '<div class="home-cats">' + cards + '</div>' +
         '<div class="home-results" hidden></div>' +
       '</main>' +
     '</div>';
+  }
+
+  function onPick(el) {
+    if (el.getAttribute('data-pick') === 'printer') {
+      homePick = { printer: el.value, href: '' };
+      var op = app.querySelector('[data-pick="op"]');
+      op.innerHTML = opOptions(homePick.printer, '');
+      op.disabled = !homePick.printer;
+    } else {
+      homePick.href = el.value;
+    }
+    app.querySelector('.pick-result').innerHTML = pickResult();
   }
 
   function fnText(it) {
@@ -346,7 +378,7 @@
     searchIndex = PRINTERS.map(function (p) {
       return {
         p: p,
-        meta: normalizeText([p.name, p.menu, p.category, p.brand, p.summary].join(' ')),
+        meta: normalizeText([p.name, printerLabel(p), p.op, p.brand, p.summary].join(' ')),
         steps: p.steps.map(stepText)
       };
     });
@@ -361,7 +393,7 @@
     searchIndex.forEach(function (e) {
       var all = e.meta + ' ' + e.steps.join(' ');
       if (!hasAll(all, words)) return;
-      // step che contengono almeno una parola e, insieme a nome e categoria della procedura, tutte
+      // step che contengono almeno una parola e, insieme a stampante e operazione, tutte
       var hits = [];
       e.steps.forEach(function (t, i) {
         var some = words.some(function (w) { return t.indexOf(w) !== -1; });
@@ -369,8 +401,8 @@
       });
       html += '<div class="result">' +
         '<a class="result-head" href="#/p/' + e.p.id + '">' +
-          '<span class="result-cat">' + esc(e.p.category) + '</span>' +
-          '<span class="printer-name">' + esc(e.p.menu) + '</span>' +
+          '<span class="result-cat">' + esc(printerLabel(e.p)) + '</span>' +
+          '<span class="printer-name">' + esc(e.p.op) + '</span>' +
         '</a>' +
         hits.map(function (i) {
           return '<a class="result-step" href="#/p/' + e.p.id + '/step/' + i + '">' +
@@ -388,8 +420,8 @@
       if (!n) return;
       html += '<div class="result">' +
         '<a class="result-head" href="#/funzioni/' + f.id + '/' + encodeURIComponent(q.trim()) + '">' +
-          '<span class="result-cat">Consultazione</span>' +
-          '<span class="printer-name">' + esc(f.name) + '</span>' +
+          '<span class="result-cat">' + esc(f.printer) + '</span>' +
+          '<span class="printer-name">' + FN_OP + '</span>' +
           '<span class="printer-meta">' + n + (n === 1 ? ' funzione trovata' : ' funzioni trovate') + '</span>' +
         '</a>' +
       '</div>';
@@ -402,7 +434,6 @@
     homeQuery = input.value;
     var active = searchWords(homeQuery).length > 0;
     var results = app.querySelector('.home-results');
-    app.querySelector('.home-cats').hidden = active;
     results.hidden = !active;
     results.innerHTML = active ? homeResults(homeQuery) : '';
   }
@@ -543,7 +574,7 @@
   // ---------- Router ----------
 
   var lastStep = { id: null, i: -1 };
-  var openCats = {}; // categorie aperte in home, ricordate finché l'app resta aperta
+  var homePick = { printer: '', href: '' }; // scelte dei menu a tendina in home, ricordate tornando indietro
   var homeQuery = ''; // ricerca in home, ricordata tornando indietro
   var lastResult = null;
 
@@ -676,11 +707,9 @@
     }
   });
 
-  // toggle non risale (bubble): si ascolta in fase di cattura
-  app.addEventListener('toggle', function (e) {
-    var cat = e.target.getAttribute && e.target.getAttribute('data-cat');
-    if (cat) openCats[cat] = e.target.open;
-  }, true);
+  app.addEventListener('change', function (e) {
+    if (e.target.hasAttribute && e.target.hasAttribute('data-pick')) onPick(e.target);
+  });
 
   app.addEventListener('input', function (e) {
     if (e.target.hasAttribute && e.target.hasAttribute('data-filter')) return filterFunctions();

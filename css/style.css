@@ -135,13 +135,17 @@ h1, h2 { margin: 0; line-height: 1.25; }
 .nav-group summary {
   list-style: none; cursor: pointer;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 10px; border-radius: 10px;
-  font-size: 12.5px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 700;
+  padding: 10px 10px; border-radius: 10px;
+  font-size: 15.5px; color: var(--ink); font-weight: 700; line-height: 1.3;
 }
+.nav-group[open] summary { color: var(--brand-2); }
+@media (prefers-color-scheme: dark) { .nav-group[open] summary { color: var(--accent); } }
 .nav-group summary::-webkit-details-marker { display: none; }
 .nav-group summary::after { content: ''; width: 7px; height: 7px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); margin: -3px 4px 0 0; transition: transform .15s ease; }
 .nav-group:not([open]) summary::after { transform: rotate(-45deg); margin-top: 0; }
 .nav-group summary:hover { background: var(--surface-2); }
+.nav-group .nav-link { margin-left: 10px; padding-left: 12px; border-left: 2px solid var(--line); border-radius: 0 10px 10px 0; }
+.nav-group .nav-link.is-active { border-left-color: var(--accent); }
 .nav-link {
   display: block; padding: 9px 10px 9px 14px; margin: 1px 0;
   border-radius: 10px; font-size: 15px; font-weight: 550; line-height: 1.3;
@@ -254,31 +258,28 @@ h1, h2 { margin: 0; line-height: 1.25; }
   background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line);
 }
 
-.cat {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+.picker {
+  display: grid; gap: 14px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 16px;
 }
-.cat-head {
-  list-style: none; cursor: pointer;
-  display: flex; align-items: center; gap: 14px;
-  padding: 18px 16px;
-  border-radius: var(--radius);
+.pick-field { display: grid; gap: 6px; }
+.pick-field select {
+  width: 100%; height: 52px; padding: 0 40px 0 14px;
+  border-radius: 12px; border: 1.5px solid var(--line);
+  background: var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235d6b7e' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center / 20px;
+  color: var(--ink); font: 600 16px/1.2 inherit; font-family: inherit;
+  appearance: none; -webkit-appearance: none;
 }
-.cat-head::-webkit-details-marker { display: none; }
-.cat-head:hover .cat-name { color: var(--brand-2); }
-@media (prefers-color-scheme: dark) { .cat-head:hover .cat-name { color: var(--accent); } }
-.cat-body { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-.cat-name { font-size: 18px; font-weight: 750; }
-.cat-chevron { color: var(--muted); font-size: 22px; display: inline-flex; transition: transform .15s ease; }
-.cat[open] .cat-chevron { transform: rotate(90deg); }
-.cat[open] .cat-head { border-bottom: 1px solid var(--line); border-radius: var(--radius) var(--radius) 0 0; }
-.cat-items { display: grid; gap: 10px; padding: 12px; background: var(--surface-2); border-radius: 0 0 var(--radius) var(--radius); }
-.cat-items .printer-card { box-shadow: none; }
-@media (prefers-reduced-motion: reduce) { .cat-chevron { transition: none; } }
+.pick-field select:focus { outline: none; border-color: var(--accent); background-color: var(--surface); }
+.pick-field select:disabled { opacity: .55; }
+.pick-result:empty { display: none; }
+.pick-result .printer-card { box-shadow: none; border-color: var(--brand-2); }
+@media (prefers-color-scheme: dark) { .pick-result .printer-card { border-color: var(--accent); } }
+.pick-summary { margin: 8px 2px 0; font-size: 14px; color: var(--muted); }
 .home-search { margin: 0; top: 64px; box-shadow: var(--shadow); }
-.home-cats, .home-results { display: grid; gap: 12px; }
+.home-results { display: grid; gap: 12px; }
 .result {
   background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;

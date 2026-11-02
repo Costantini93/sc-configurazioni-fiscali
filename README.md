@@ -8,7 +8,7 @@ Funziona da telefono e da PC, anche offline, e si può installare come app.
 Tutti i contenuti sono in [js/data.js](js/data.js): ogni stampante ha la sua lista di step.
 In cima al file è spiegato come scrivere tasti, numeri, voci di menu, tabelle e note.
 Per aggiungere una procedura basta copiare un blocco esistente e cambiarne i contenuti.
-Con `category` scegli in quale categoria del menu compare (Preparazione, Verifica periodica, …) e con `menu` il nome che vi viene mostrato.
+Con `printer` scegli la stampante (marca e modello) e con `op` il tipo di operazione (Preparazione, Verifica periodica, …): menu laterale e menu a tendina della home si costruiscono da questi due campi.
 
 ## Pubblicare su GitHub Pages
 
