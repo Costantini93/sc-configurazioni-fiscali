@@ -27,7 +27,8 @@
     pc: { label: 'Sul PC · RX Config', icon: ICON.pc },
     web: { label: 'Sul portale web', icon: ICON.web },
     react: { label: 'Sul PC · React app', icon: ICON.pc },
-    emotiq: { label: 'Sul PC · Emotiq Tools', icon: ICON.pc }
+    emotiq: { label: 'Sul PC · Emotiq Tools', icon: ICON.pc },
+    rch: { label: 'Sul PC · Aggiornamento firmware RCH', icon: ICON.pc }
   };
 
   // ---------- Stato persistente ----------

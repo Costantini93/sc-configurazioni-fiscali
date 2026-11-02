@@ -9,7 +9,7 @@
  * Ogni step ha:
  *   phase   nome della fase (gli step consecutivi con la stessa fase vengono raggruppati)
  *   title   titolo dello step
- *   where   dove si opera: 'printer' | 'pc' | 'web' | 'react' | 'emotiq'
+ *   where   dove si opera: 'printer' | 'pc' | 'web' | 'react' | 'emotiq' | 'rch'
  *   intro   (facoltativo) frase introduttiva
  *   blocks  contenuto dello step:
  *     { type: 'seq',   label?, seq: [token, ...] }      sequenza di tasti
@@ -1751,6 +1751,128 @@ const PRINTERS = [
         where: 'printer',
         blocks: [
           { type: 'list', items: ['Per uscire spegni e riaccendi la macchina.'] }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'rch-firmware',
+    name: 'Aggiornamento firmware RCH',
+    brand: 'RCH',
+    category: 'Altre procedure',
+    menu: 'RCH · Aggiornamento firmware',
+    summary: 'Controllo di data e ora, file di verifica da RCH x Dealer e aggiornamento in LAN.',
+    needs: [
+      'Credenziali RCH x Dealer',
+      'Matricola della cassa',
+      'PC con il programma di aggiornamento firmware RCH, in rete con la cassa'
+    ],
+    steps: [
+      {
+        phase: 'Cassa',
+        title: 'Controlla data e ora',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '4' }, { key: true }] },
+          { type: 'seq', label: 'Per spostarti tra i campi:', seq: [{ k: 'REPARTO' }, { k: 'PREZZO REPARTO' }] },
+          { type: 'list', items: ['Vai su data e ora e correggile se serve.'] }
+        ]
+      },
+      {
+        phase: 'RCH x Dealer',
+        title: 'Accedi a RCH x Dealer',
+        where: 'web',
+        blocks: [
+          { type: 'list', items: ['Apri RCH x Dealer dal browser ed effettua il login.'] }
+        ]
+      },
+      {
+        phase: 'RCH x Dealer',
+        title: 'Scarica il file di verifica',
+        where: 'web',
+        blocks: [
+          { type: 'seq', seq: [
+            { m: 'Gestione dispositivi' }, { m: 'Anagrafica' }, { t: 'cerca la matricola' }, { m: 'Scarica file di verifica' }
+          ] }
+        ]
+      },
+      {
+        phase: 'Aggiornamento',
+        title: 'Lancia l\'aggiornamento',
+        where: 'rch',
+        intro: 'Apri il programma di aggiornamento firmware RCH.',
+        blocks: [
+          { type: 'input', var: 'ip', label: 'Indirizzo IP della stampante', placeholder: 'es. 192.168.1.100' },
+          { type: 'seq', seq: [
+            { m: 'LAN' }, { v: 'ip', cap: 'IP della stampante', empty: 'IP non annotato' }, { m: 'Open' }
+          ] },
+          { type: 'note', kind: 'tip', text: 'Non spegnere la cassa durante l\'aggiornamento.' }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'rch-verifica',
+    name: 'Verifica periodica RCH',
+    brand: 'RCH',
+    category: 'Verifica periodica',
+    menu: 'RCH',
+    summary: 'Scontrini di prova con annullo e registrazione della verifica periodica.',
+    steps: [
+      {
+        phase: 'Scontrini',
+        title: 'Scontrino in contanti',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '139', cap: '1,39 €' }, { k: 'REPARTO' }, { k: 'CONTANTI' }] }
+        ]
+      },
+      {
+        phase: 'Scontrini',
+        title: 'Scontrino elettronico',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '125', cap: '1,25 €' }, { k: 'REPARTO' }, { k: 'SHIFT' }, { k: 'CARTA' }] }
+        ]
+      },
+      {
+        phase: 'Scontrini',
+        title: 'Annulla gli scontrini',
+        where: 'printer',
+        intro: 'Annulla entrambi gli scontrini, uno alla volta.',
+        blocks: [
+          { type: 'seq', seq: [{ k: 'SHIFT' }, { k: 'ANNULLO' }, { m: 'SÌ', cap: 'spostati su SÌ' }, { k: 'CONTANTI' }] },
+          { type: 'seq', label: 'Poi:', seq: [
+            { t: 'n. azzeramento' }, { t: 'n. scontrino' }, { t: 'conferma i dati' }, { k: 'CONTANTI' }
+          ] },
+          { type: 'note', kind: 'info', text: 'Ripeti per il secondo scontrino.' }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Entra in verifica',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '5' }, { key: true }, { n: '555', cap: 'password' }, { k: 'CONTANTI' }] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Intervento tecnico',
+        where: 'printer',
+        intro: 'Dal menu SRV:',
+        blocks: [
+          { type: 'seq', seq: [{ m: 'MENU FUNZIONI RT' }, { m: 'INTERVENTO TECNICO' }, { k: 'CONTANTI' }] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Verifica periodica',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ m: 'VERIFICA PERIODICA' }, { t: 'OK' }] }
         ]
       }
     ]
