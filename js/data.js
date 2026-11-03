@@ -68,6 +68,7 @@ const OPERATIONS = [
   'Disattivazione',
   'Registrazione intervento',
   'Aggiornamento firmware',
+  'Cambio indirizzo IP',
   'Corrispettivi non inviati',
   'Opera non invia',
   'Ripristino Opera',
@@ -1730,6 +1731,80 @@ const PRINTERS = [
         blocks: [
           { type: 'list', items: ['Inserisci la data e tutto quello che viene richiesto.'] },
           { type: 'seq', label: 'Alla fine chiede AZZERAMENTO?', seq: [{ k: 'VOID' }] }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'epson-ip',
+    name: 'Cambio indirizzo IP Epson FP-81 II RT',
+    brand: 'Epson',
+    printer: 'Epson',
+    op: 'Cambio indirizzo IP',
+    summary: 'Impostazione di un IP fisso dalla funzione S19 (rete), con DHCP disattivato.',
+    needs: ['Indirizzo IP, subnet mask e gateway da usare'],
+    steps: [
+      {
+        phase: 'Programmazione',
+        title: 'Entra in modalità SET',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '3333' }, { key: true, cap: 'o C, secondo il tastierino' }] },
+          { type: 'note', kind: 'info', text: 'Sul display compare S-- SCELTA FUNZIONE.' }
+        ]
+      },
+      {
+        phase: 'Programmazione',
+        title: 'Funzione di rete S19',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '19' }] },
+          { type: 'seq', label: 'Se sul display compare NON CONNESSA:', seq: [
+            { k: 'X', cap: 'imposta COMPUTER' }, { k: 'TOTALE', cap: 'o CONTANTE' }
+          ] }
+        ]
+      },
+      {
+        phase: 'Rete',
+        title: 'Disattiva il DHCP',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ k: 'TOTALE', cap: 'scorri fino a DHCP' }, { m: 'DHCP: NO' }] },
+          { type: 'note', kind: 'info', text: 'Con il DHCP su NO l\'indirizzo si imposta a mano e non cambia più.' }
+        ]
+      },
+      {
+        phase: 'Rete',
+        title: 'Indirizzo IP',
+        where: 'printer',
+        blocks: [
+          { type: 'input', var: 'ip', label: 'Nuovo indirizzo IP (12 cifre)', placeholder: 'es. 192168000110' },
+          { type: 'seq', seq: [{ v: 'ip', cap: '12 cifre', empty: 'IP non annotato' }, { k: 'TOTALE', cap: 'o CONTANTE' }] },
+          { type: 'note', kind: 'warn', text: 'Scrivi tutte le 12 cifre, con gli zeri di ogni blocco: 192.168.0.110 diventa 192168000110.' }
+        ]
+      },
+      {
+        phase: 'Rete',
+        title: 'Subnet, gateway e DNS',
+        where: 'printer',
+        intro: 'Allo stesso modo, conferma ogni voce con TOTALE (o CONTANTE).',
+        blocks: [
+          { type: 'table', head: ['Voce', 'Esempio'], rows: [
+            ['Subnet mask', '255255255000'],
+            ['Gateway', 'IP del router, es. 192168000001'],
+            ['DNS', 'Spesso uguale al gateway'],
+            ['Proxy', 'Lascia com\'è']
+          ] }
+        ]
+      },
+      {
+        phase: 'Uscita',
+        title: 'Esci e salva',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }] },
+          { type: 'note', kind: 'info', text: 'La cassa esce dalla programmazione e torna in registrazione.' }
         ]
       }
     ]
