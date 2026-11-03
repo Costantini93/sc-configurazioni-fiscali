@@ -68,6 +68,7 @@ const OPERATIONS = [
   'Disattivazione',
   'Registrazione intervento',
   'Aggiornamento firmware',
+  'Verifica indirizzo IP',
   'Cambio indirizzo IP',
   'Corrispettivi non inviati',
   'Opera non invia',
@@ -1737,6 +1738,37 @@ const PRINTERS = [
   },
 
   {
+    id: 'epson-ip-verifica',
+    name: 'Verifica indirizzo IP Epson FP-81 II RT',
+    brand: 'Epson',
+    printer: 'Epson',
+    op: 'Verifica indirizzo IP',
+    summary: 'Lettura dal tastierino dell\'indirizzo IP impostato sulla stampante.',
+    steps: [
+      {
+        phase: 'Verifica',
+        title: 'Leggi l\'indirizzo IP',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '3333' }, { key: true }, { n: '19' }, { k: 'CONTANTI', x: 2 }] },
+          { type: 'note', kind: 'info', text: 'Sul display compare l\'indirizzo IP della stampante.' },
+          { type: 'note', kind: 'warn', text: 'Se è tutto a 0 non c\'è nessun indirizzo IP impostato: va impostato con la procedura Cambio indirizzo IP.' },
+          { type: 'input', var: 'ip', label: 'Annota l\'indirizzo IP', placeholder: 'es. 192.168.0.110' }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Esci',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }] },
+          { type: 'note', kind: 'info', text: 'La cassa torna in registrazione.' }
+        ]
+      }
+    ]
+  },
+
+  {
     id: 'epson-ip',
     name: 'Cambio indirizzo IP Epson FP-81 II RT',
     brand: 'Epson',
@@ -1750,7 +1782,7 @@ const PRINTERS = [
         title: 'Entra in modalità SET',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ n: '3333' }, { key: true, cap: 'o C, secondo il tastierino' }] },
+          { type: 'seq', seq: [{ n: '3333' }, { key: true }] },
           { type: 'note', kind: 'info', text: 'Sul display compare S-- SCELTA FUNZIONE.' }
         ]
       },
@@ -1761,7 +1793,7 @@ const PRINTERS = [
         blocks: [
           { type: 'seq', seq: [{ n: '19' }] },
           { type: 'seq', label: 'Se sul display compare NON CONNESSA:', seq: [
-            { k: 'X', cap: 'imposta COMPUTER' }, { k: 'TOTALE', cap: 'o CONTANTE' }
+            { k: 'X', cap: 'imposta COMPUTER' }, { k: 'CONTANTI' }
           ] }
         ]
       },
@@ -1770,7 +1802,7 @@ const PRINTERS = [
         title: 'Disattiva il DHCP',
         where: 'printer',
         blocks: [
-          { type: 'seq', seq: [{ k: 'TOTALE', cap: 'scorri fino a DHCP' }, { m: 'DHCP: NO' }] },
+          { type: 'seq', seq: [{ k: 'CONTANTI', cap: 'scorri fino a DHCP' }, { m: 'DHCP: NO' }] },
           { type: 'note', kind: 'info', text: 'Con il DHCP su NO l\'indirizzo si imposta a mano e non cambia più.' }
         ]
       },
@@ -1780,7 +1812,7 @@ const PRINTERS = [
         where: 'printer',
         blocks: [
           { type: 'input', var: 'ip', label: 'Nuovo indirizzo IP (12 cifre)', placeholder: 'es. 192168000110' },
-          { type: 'seq', seq: [{ v: 'ip', cap: '12 cifre', empty: 'IP non annotato' }, { k: 'TOTALE', cap: 'o CONTANTE' }] },
+          { type: 'seq', seq: [{ v: 'ip', cap: '12 cifre', empty: 'IP non annotato' }, { k: 'CONTANTI' }] },
           { type: 'note', kind: 'warn', text: 'Scrivi tutte le 12 cifre, con gli zeri di ogni blocco: 192.168.0.110 diventa 192168000110.' }
         ]
       },
@@ -1788,7 +1820,7 @@ const PRINTERS = [
         phase: 'Rete',
         title: 'Subnet, gateway e DNS',
         where: 'printer',
-        intro: 'Allo stesso modo, conferma ogni voce con TOTALE (o CONTANTE).',
+        intro: 'Allo stesso modo, conferma ogni voce con CONTANTI.',
         blocks: [
           { type: 'table', head: ['Voce', 'Esempio'], rows: [
             ['Subnet mask', '255255255000'],
