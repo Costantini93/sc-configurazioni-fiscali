@@ -66,6 +66,7 @@ const OPERATIONS = [
   'Estensione DGFE',
   'Cambio ragione sociale',
   'Disattivazione',
+  'Disattivazione lotteria',
   'Registrazione intervento',
   'Aggiornamento firmware',
   'Verifica indirizzo IP',
@@ -1677,6 +1678,40 @@ const PRINTERS = [
   },
 
   {
+    id: 'emotiq-lotteria',
+    name: 'Disattivazione lotteria Emotiq',
+    brand: 'Emotiq',
+    printer: 'Emotiq Nota / Model M / Opera 57',
+    op: 'Disattivazione lotteria',
+    summary: 'Controllo e disattivazione della lotteria.',
+    legend: EMOTIQ_LEGEND,
+    steps: [
+      {
+        phase: 'Lotteria',
+        title: 'Apri l\'impostazione lotteria',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '650' }, { k: 'SBT' }] },
+          { type: 'table', head: ['Valore', 'Lotteria'], rows: [
+            ['1', 'Attiva'],
+            ['0', 'Disattivata']
+          ] }
+        ]
+      },
+      {
+        phase: 'Lotteria',
+        title: 'Disattiva la lotteria',
+        where: 'printer',
+        intro: 'Se il valore è 1, imposta 0.',
+        blocks: [
+          { type: 'seq', seq: [{ n: '0' }, { k: 'SBT' }] },
+          { type: 'note', kind: 'tip', text: 'Se è già su 0 la lotteria è disattivata: non serve cambiare niente.' }
+        ]
+      }
+    ]
+  },
+
+  {
     id: 'emotiq-disattivazione',
     name: 'Disattivazione Emotiq',
     brand: 'Emotiq',
@@ -2345,6 +2380,7 @@ const EMOTIQ_FUNCTIONS = [
         ] }],
         ['638', 'TOGLIERE IL LOGO DALLO SCONTRINO', { seq: [{ n: '638' }, { k: 'SBT' }, { n: '0' }, { k: 'SBT' }] }],
         ['309', 'METTERE LA VIRGOLA DECIMALE', { seq: [{ n: '309' }, { k: 'SBT' }, { n: '1' }] }],
+        ['650', 'LOTTERIA (1 = ATTIVA, 0 = DISATTIVATA)', { seq: [{ n: '650' }, { k: 'SBT' }], note: 'Per disattivarla imposta 0.' }],
         ['609', 'GESTIONE OPERATORI', { seq: [{ n: '609' }, { k: 'SBT' }] }]
       ] }
     ]
