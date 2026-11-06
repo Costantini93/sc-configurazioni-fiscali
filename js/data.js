@@ -354,7 +354,7 @@ const PRINTERS = [
         where: 'react',
         blocks: [
           { type: 'seq', seq: [{ m: 'Modelli' }, { m: 'Nuovo modello' }] },
-          { type: 'list', items: ['Imposta reparti, IVA e intestazione. Nell\'ultima stringa inserisci POS.'] },
+          { type: 'list', items: ['Imposta reparti, IVA e intestazione.'] },
           { type: 'seq', label: 'Nella voce Sistema:', seq: [{ m: 'Sistema' }] },
           { type: 'table', head: ['Impostazione', 'Valore'], rows: [
             ['Intensità stampa', 'Media'],
