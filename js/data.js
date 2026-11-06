@@ -1257,7 +1257,8 @@ const PRINTERS = [
     summary: 'Connessione Wi-Fi, test di rete, configurazione con Emotiq Tools, verifica IVA e QR code.',
     needs: [
       'PC con Emotiq Tools',
-      'P.IVA e C.F. del cliente',
+      'P.IVA del cliente',
+      'P.IVA del laboratorio e C.F. del tecnico',
       'Nome e password del Wi-Fi del cliente'
     ],
     legend: EMOTIQ_LEGEND,
@@ -1301,8 +1302,13 @@ const PRINTERS = [
         phase: 'Emotiq Tools',
         title: 'Fiscalizzazione',
         where: 'emotiq',
+        intro: 'Inserisci, nell\'ordine:',
         blocks: [
-          { type: 'list', items: ['Inserisci P.IVA e C.F. del cliente.'] }
+          { type: 'list', items: [
+            'P.IVA del cliente',
+            'P.IVA del laboratorio',
+            'C.F. del tecnico'
+          ] }
         ]
       },
       {
@@ -2127,7 +2133,7 @@ PRINTERS.push(
     summary: 'Chiusura, disattivazione, estensione DGFE, attivazione, nuova intestazione, aggiornamento e verifica.',
     needs: [
       'PC con Emotiq Tools',
-      'P.IVA, C.F. e intestazione della nuova ragione sociale',
+      'P.IVA e intestazione della nuova ragione sociale',
       'C.F. del tecnico e P.IVA del laboratorio',
       'Telefono con l\'app / portale EmotiqMe',
       'Nome e password del Wi-Fi del cliente'
