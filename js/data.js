@@ -62,6 +62,7 @@ const OPERATIONS = [
   'Preparazione',
   'Verifica periodica',
   'Annullo scontrino',
+  'Lettura giornaliera',
   'Sostituzione DGFE',
   'Estensione DGFE',
   'Cambio ragione sociale',
@@ -1862,6 +1863,34 @@ const PRINTERS = [
         blocks: [
           { type: 'list', items: ['Inserisci la data e tutto quello che viene richiesto.'] },
           { type: 'seq', label: 'Alla fine chiede AZZERAMENTO?', seq: [{ k: 'VOID' }] }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'epson-lettura',
+    name: 'Lettura giornaliera Epson',
+    brand: 'Epson',
+    printer: 'Epson',
+    op: 'Lettura giornaliera',
+    summary: 'Stampa della lettura giornaliera dal tastierino.',
+    steps: [
+      {
+        phase: 'Lettura',
+        title: 'Stampa la lettura giornaliera',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '1111' }, { key: true }, { n: '01' }, { k: 'CONTANTI' }] }
+        ]
+      },
+      {
+        phase: 'Lettura',
+        title: 'Torna alla vendita',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }] },
+          { type: 'note', kind: 'info', text: 'La cassa torna in modalità di vendita.' }
         ]
       }
     ]
