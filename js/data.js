@@ -966,6 +966,59 @@ const PRINTERS = [
   },
 
   {
+    id: 'labware-verifica',
+    name: 'Verifica periodica Labware',
+    brand: 'Labware',
+    printer: ['Labware Smart RT', 'Labware Basiq'],
+    op: 'Verifica periodica',
+    summary: 'Scontrini di prova con annullo, registrazione della verifica e chiusura.',
+    steps: [
+      {
+        phase: 'Scontrini',
+        title: 'Scontrini di prova',
+        where: 'printer',
+        intro: 'Emetti due scontrini:',
+        blocks: [
+          { type: 'table', head: ['Scontrino', 'Importo', 'Pagamento'], rows: [
+            ['1', '1,39 €', 'Contanti'],
+            ['2', '1,25 €', 'Elettronico']
+          ] }
+        ]
+      },
+      {
+        phase: 'Scontrini',
+        title: 'Annulla gli scontrini',
+        where: 'printer',
+        intro: 'Annulla entrambi gli scontrini, uno alla volta.',
+        blocks: [
+          { type: 'seq', label: 'Sulla Basiq (in REG):', seq: [
+            { k: 'ANNULLO' }, { k: ',', cap: 'matricola' }, { t: 'n. chiusura + n. documento' }, { k: ',' }, { t: 'data' }, { k: ',' }
+          ] },
+          { type: 'note', kind: 'info', text: 'Ripeti per il secondo scontrino.' }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Registra la verifica',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '9626' }, { key: true }, { n: '20' }] },
+          { type: 'list', items: ['Inserisci i dati richiesti.'] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', label: 'Smart RT:', seq: [{ key: true }, { k: 'CHIUSURA' }] },
+          { type: 'seq', label: 'Basiq (rapporto fiscale giornaliero):', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '01' }, { k: 'CONTANTI' }] }
+        ]
+      }
+    ]
+  },
+
+  {
     id: 'labware-logo',
     name: 'Logo sullo scontrino Labware',
     brand: 'Labware',
