@@ -1,5 +1,5 @@
 // Quando si aggiungono nuovi file (es. immagini) inserirli in FILES e aumentare la versione.
-var CACHE = 'sc-config-v19';
+var CACHE = 'sc-config-v20';
 
 var FILES = [
   './',

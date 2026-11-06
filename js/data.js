@@ -1313,6 +1313,14 @@ const PRINTERS = [
       },
       {
         phase: 'Emotiq Tools',
+        title: 'Attivazione',
+        where: 'emotiq',
+        blocks: [
+          { type: 'seq', seq: [{ m: 'Trasferisci' }, { m: 'Trasmissione telematica' }, { m: 'Attivazione' }] }
+        ]
+      },
+      {
+        phase: 'Emotiq Tools',
         title: 'Intestazione',
         where: 'emotiq',
         blocks: [
@@ -2143,7 +2151,7 @@ PRINTERS.push(
       stepsFrom('emotiq-disattivazione', 'Chiusura', 'Chiusura', 'Chiusura cassa'),
       stepsFrom('emotiq-disattivazione', 'Disattiva la cassa', 'Disattiva la cassa', 'Disattivazione'),
       stepsFrom('emotiq-dgfe', 'Estendi la DGFE', 'Verifica il QR code', 'DGFE'),
-      stepsFrom('emotiq-attivazione', 'Collega la cassa al Wi-Fi', 'Fiscalizzazione', 'Attivazione cassa'),
+      stepsFrom('emotiq-attivazione', 'Collega la cassa al Wi-Fi', 'Attivazione', 'Attivazione cassa'),
       stepsFrom('emotiq-attivazione', 'Intestazione', 'Intestazione', 'Nuova intestazione'),
       stepsFrom('emotiq-attivazione', 'Trasferisci alla stampante', 'Trasferisci alla stampante', 'Nuova intestazione'),
       [{
