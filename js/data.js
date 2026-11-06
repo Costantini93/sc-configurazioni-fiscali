@@ -1291,7 +1291,10 @@ const PRINTERS = [
         where: 'emotiq',
         intro: 'Apri Emotiq Tools sul PC.',
         blocks: [
-          { type: 'seq', seq: [{ m: 'File' }, { m: 'Configura porta' }, { m: 'Connetti' }, { m: 'Trasferisci' }] }
+          { type: 'seq', seq: [
+            { m: 'File' }, { m: 'Configura porta' }, { m: 'Connetti' }, { m: 'Trasferisci' },
+            { m: 'Leggi informazioni da registratore' }, { m: 'Seleziona tutti' }
+          ] }
         ]
       },
       {
