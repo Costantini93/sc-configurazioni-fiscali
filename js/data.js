@@ -355,6 +355,13 @@ const PRINTERS = [
         blocks: [
           { type: 'seq', seq: [{ m: 'Modelli' }, { m: 'Nuovo modello' }] },
           { type: 'list', items: ['Imposta reparti, IVA e intestazione. Nell\'ultima stringa inserisci POS.'] },
+          { type: 'seq', label: 'Nella voce Sistema:', seq: [{ m: 'Sistema' }] },
+          { type: 'table', head: ['Impostazione', 'Valore'], rows: [
+            ['Intensità stampa', 'Media'],
+            ['Richiesta dati pagamento elettronico offline', 'Automatico'],
+            ['Flag 40', 'ON'],
+            ['Canale pagamento 1', 'POS']
+          ] },
           { type: 'note', kind: 'info', text: 'Annota il numero che appare nella React app: serve nel prossimo step.' },
           { type: 'input', var: 'modello', label: 'Numero mostrato dalla React app', placeholder: 'es. 12' }
         ]
