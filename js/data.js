@@ -71,6 +71,7 @@ const OPERATIONS = [
   'Aggiornamento firmware',
   'Verifica indirizzo IP',
   'Cambio indirizzo IP',
+  'Logo sullo scontrino',
   'Corrispettivi non inviati',
   'Opera non invia',
   'Ripristino Opera',
@@ -959,6 +960,30 @@ const PRINTERS = [
           ] },
           { type: 'seq', label: 'Conferma:', seq: [{ k: 'ANNULLO', cap: 'ANNULLO SCONTRINO sulla Basiq' }] },
           { type: 'note', kind: 'info', text: '55 = disattivazione per cessione. Per un altro motivo si usa il 56, che chiede di scrivere il motivo. Dopo la disattivazione la cassa non è più associata all\'esercente.' }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'labware-logo',
+    name: 'Logo sullo scontrino Labware',
+    brand: 'Labware',
+    printer: ['Labware Smart RT', 'Labware Basiq'],
+    op: 'Logo sullo scontrino',
+    summary: 'Controllo e attivazione o disattivazione del logo sullo scontrino.',
+    steps: [
+      {
+        phase: 'Logo',
+        title: 'Logo sullo scontrino',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '309' }, { k: 'SUB-TOTALE' }] },
+          { type: 'table', head: ['Valore', 'Logo'], rows: [
+            ['1', 'Abilitato'],
+            ['0', 'Disabilitato']
+          ] },
+          { type: 'note', kind: 'info', text: 'Per cambiarlo imposta 1 per abilitare il logo o 0 per disabilitarlo.' }
         ]
       }
     ]
@@ -2445,7 +2470,8 @@ const LABWARE_FUNCTIONS = [
         ['', 'NON RISCOSSO / CREDITO', { seq: [{ k: 'FN' }, { k: 'CREDITO' }] }],
         ['', 'ENTRATE DI CASSA', { seq: [{ t: 'importo' }, { k: 'ENTRATE' }, { k: 'CONTANTI' }] }],
         ['', 'PRELIEVI DI CASSA', { seq: [{ t: 'importo' }, { k: 'PRELIEVI' }, { k: 'CONTANTI' }] }],
-        ['', 'SCONTRINO DIGITALE (MODALITÀ DI STAMPA)', { seq: [{ k: 'FN' }, { k: 'CARTA' }], note: 'Prima di chiudere lo scontrino, 1 o 2 volte.' }]
+        ['', 'SCONTRINO DIGITALE (MODALITÀ DI STAMPA)', { seq: [{ k: 'FN' }, { k: 'CARTA' }], note: 'Prima di chiudere lo scontrino, 1 o 2 volte.' }],
+        ['309', 'LOGO SULLO SCONTRINO (1 = ABILITATO, 0 = DISABILITATO)', { seq: [{ n: '309' }, { k: 'SUB-TOTALE' }] }]
       ] }
     ]
   },
