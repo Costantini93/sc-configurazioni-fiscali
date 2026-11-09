@@ -112,6 +112,32 @@
 
   function printersOf(p) { return [].concat(p.printer); }
   function photosOf(model) { return PRINTER_PHOTOS[model] || []; }
+  // Foto che si ingrandisce al tocco
+  function zoomPhoto(src, cls, label) {
+    return '<button type="button" class="zoom-btn" data-zoom="' + esc(src) + '" data-zoom-label="' + esc(label || '') + '" aria-label="Ingrandisci la foto' + (label ? ' di ' + esc(label) : '') + '">' +
+      photoImg(src, cls) + '</button>';
+  }
+  function openZoom(src, label) {
+    var box = document.createElement('div');
+    box.className = 'zoom-root';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-label', label || 'Foto della stampante');
+    box.innerHTML = '<div class="zoom-backdrop" data-action="close-zoom"></div>' +
+      '<figure class="zoom-box">' +
+        '<button class="icon-btn zoom-close" data-action="close-zoom" aria-label="Chiudi">' + ICON.close + '</button>' +
+        '<img src="' + esc(src) + '" alt="' + esc(label || '') + '">' +
+        (label ? '<figcaption>' + esc(label) + '</figcaption>' : '') +
+      '</figure>';
+    box.addEventListener('click', function (e) {
+      if (e.target.closest('[data-action="close-zoom"]') || e.target.tagName === 'IMG') closeZoom();
+    });
+    document.body.appendChild(box);
+    box.querySelector('.zoom-close').focus();
+  }
+  function closeZoom() {
+    var box = document.querySelector('.zoom-root');
+    if (box) box.remove();
+  }
   function photoImg(src, cls) {
     return '<img class="' + cls + '" src="' + esc(src) + '" alt="" loading="lazy">';
   }
@@ -293,7 +319,7 @@
       }).join('') : '');
   }
   function pickPhoto() {
-    return photosOf(homePick.printer).map(function (src) { return photoImg(src, 'pick-photo-img'); }).join('');
+    return photosOf(homePick.printer).map(function (src) { return zoomPhoto(src, 'pick-photo-img', homePick.printer); }).join('');
   }
   function pickResult() {
     if (!homePick.href) return '';
@@ -531,7 +557,7 @@
       '<main class="content">' +
         '<div class="overview-head">' +
           (photosOf(printersOf(p)[0])[0]
-            ? '<span class="printer-photo">' + photoImg(photosOf(printersOf(p)[0])[0], 'printer-photo-img') + '</span>'
+            ? '<span class="printer-photo">' + zoomPhoto(photosOf(printersOf(p)[0])[0], 'printer-photo-img', printersOf(p)[0]) + '</span>'
             : '<span class="printer-icon lg">' + ICON.printer + '</span>') +
           '<div><h1>' + esc(p.name) + '</h1><p class="muted">' + esc(p.summary) + '</p></div>' +
         '</div>' +
@@ -705,6 +731,8 @@
   // ---------- Eventi ----------
 
   app.addEventListener('click', function (e) {
+    var zoom = e.target.closest('[data-zoom]');
+    if (zoom) return openZoom(zoom.getAttribute('data-zoom'), zoom.getAttribute('data-zoom-label'));
     var chip = e.target.closest('[data-chip]');
     if (chip) {
       app.querySelectorAll('.fn-chip').forEach(function (c) {
@@ -768,6 +796,10 @@
   });
 
   document.addEventListener('keydown', function (e) {
+    if (document.querySelector('.zoom-root')) {
+      if (e.key === 'Escape') closeZoom();
+      return;
+    }
     if (document.body.classList.contains('nav-open')) {
       if (e.key === 'Escape') closeNav();
       return;
@@ -783,7 +815,7 @@
     else if (!typing && e.key === 'ArrowLeft') prev();
   });
 
-  window.addEventListener('hashchange', function () { closeNav(); route(); });
+  window.addEventListener('hashchange', function () { closeNav(); closeZoom(); route(); });
   renderNav();
   route();
 
