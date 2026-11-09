@@ -2,7 +2,7 @@
  * Guide di configurazione delle stampanti fiscali.
  *
  * Per aggiungere una procedura basta aggiungere un oggetto all'array PRINTERS.
- * printer: marca e modello (uno di PRINTER_MODELS, oppure un array se la procedura vale per più modelli)
+ * printer: modello (uno dei models di PRINTER_BRANDS, oppure un array se la procedura vale per più modelli)
  * op: tipo di operazione (uno di OPERATIONS). Menu e home si costruiscono da questi due campi.
  * needs (cosa serve) e legend (legenda tasti) sono facoltativi.
  *
@@ -47,15 +47,15 @@ const EMOTIQ_ANNULLO = [
   { t: 'n. documento', cap: '8 cifre, senza il -' }, { k: 'SBT' }, { k: 'SBT' }
 ];
 
-// Stampanti (marca e modello) e operazioni, nell'ordine in cui compaiono nel menu e in home
-const PRINTER_MODELS = [
-  'Custom Big',
-  'Labware Smart RT',
-  'Labware Basiq',
-  '3i RT 30 / RT 40',
-  'Emotiq Nota / Model M / Opera 57',
-  'Epson',
-  'RCH Print F'
+// Marche e modelli, nell'ordine in cui compaiono nel menu e in home.
+// Le marche con più modelli diventano una categoria con dentro i modelli.
+const PRINTER_BRANDS = [
+  { brand: 'Custom', models: ['Custom Big'] },
+  { brand: 'Labware', models: ['Labware Smart RT', 'Labware Basiq'] },
+  { brand: '3i', models: ['3i RT 30', '3i RT 40'] },
+  { brand: 'Emotiq', models: ['Emotiq Model M', 'Emotiq Nota', 'Emotiq Opera 57'] },
+  { brand: 'Epson', models: ['Epson FP-81 II RT'] },
+  { brand: 'RCH', models: ['RCH Print F'] }
 ];
 
 // Foto delle stampanti (in assets/printers), mostrate nel menu, in home e nella pagina della procedura.
@@ -64,8 +64,12 @@ const PRINTER_PHOTOS = {
   'Custom Big': ['assets/printers/custom.jpg'],
   'Labware Smart RT': ['assets/printers/labware-smart-rt.jpg'],
   'Labware Basiq': ['assets/printers/labware-basiq.jpg'],
-  '3i RT 30 / RT 40': ['assets/printers/3i-rt-1.jpg', 'assets/printers/3i-rt-2.jpg'],
-  'Emotiq Nota / Model M / Opera 57': ['assets/printers/emotiq-model-m.jpg'],
+  '3i RT 30': ['assets/printers/3i-rt-1.jpg'],
+  '3i RT 40': ['assets/printers/3i-rt-2.jpg'],
+  'Emotiq Model M': ['assets/printers/emotiq-model-m.jpg'],
+  'Emotiq Nota': ['assets/printers/emotiq-nota.jpg'],
+  'Emotiq Opera 57': ['assets/printers/emotiq-opera-57.jpg'],
+  'Epson FP-81 II RT': ['assets/printers/epson-fp-81.jpg'],
   'RCH Print F': ['assets/printers/rch-print-f.jpg']
 };
 
@@ -1193,7 +1197,7 @@ const PRINTERS = [
     id: '3i-verifica',
     name: 'Verifica periodica RT 30 / RT 40',
     brand: '3i',
-    printer: '3i RT 30 / RT 40',
+    printer: ['3i RT 30', '3i RT 40'],
     op: 'Verifica periodica',
     summary: 'Chiusura, corrispettivi, connessione, scontrini di prova con annullo e registrazione intervento.',
     needs: ['C.F. del tecnico e P.IVA di S.C.'],
@@ -1279,7 +1283,7 @@ const PRINTERS = [
     id: '3i-dgfe',
     name: 'Sostituzione DGFE RT 30 / RT 40',
     brand: '3i',
-    printer: '3i RT 30 / RT 40',
+    printer: ['3i RT 30', '3i RT 40'],
     op: 'Sostituzione DGFE',
     summary: 'Chiusura, sostituzione fisica della DGFE, inizializzazione e report di verifica.',
     needs: ['DGFE nuova', 'Piombo'],
@@ -1349,7 +1353,7 @@ const PRINTERS = [
     id: 'emotiq-attivazione',
     name: 'Attivazione Nota 2',
     brand: 'Emotiq',
-    printer: 'Emotiq Nota / Model M / Opera 57',
+    printer: ['Emotiq Model M', 'Emotiq Nota', 'Emotiq Opera 57'],
     op: 'Preparazione',
     summary: 'Connessione Wi-Fi, test di rete, configurazione con Emotiq Tools, verifica IVA e QR code.',
     needs: [
@@ -1478,7 +1482,7 @@ const PRINTERS = [
     id: 'emotiq-verifica',
     name: 'Verifica periodica Nota / Model M / Opera 57',
     brand: 'Emotiq',
-    printer: 'Emotiq Nota / Model M / Opera 57',
+    printer: ['Emotiq Model M', 'Emotiq Nota', 'Emotiq Opera 57'],
     op: 'Verifica periodica',
     summary: 'QR code, chiusura, test di rete, scontrini di prova con annullo, registrazione della verifica e check-list.',
     needs: ['C.F. del tecnico e P.IVA del laboratorio', 'Check-list della verifica'],
@@ -1597,7 +1601,7 @@ const PRINTERS = [
     id: 'emotiq-dgfe',
     name: 'Estensione DGFE Emotiq',
     brand: 'Emotiq',
-    printer: 'Emotiq Nota / Model M / Opera 57',
+    printer: ['Emotiq Model M', 'Emotiq Nota', 'Emotiq Opera 57'],
     op: 'Estensione DGFE',
     summary: 'Estensione della DGFE dall\'app, scaricamento con la chiusura e controllo finale.',
     needs: ['Telefono con l\'app / portale EmotiqMe', 'Matricola della macchina'],
@@ -1654,7 +1658,7 @@ const PRINTERS = [
     id: 'emotiq-annullo',
     name: 'Annullo scontrino Emotiq',
     brand: 'Emotiq',
-    printer: 'Emotiq Nota / Model M / Opera 57',
+    printer: ['Emotiq Model M', 'Emotiq Nota', 'Emotiq Opera 57'],
     op: 'Annullo scontrino',
     summary: 'Annullamento di uno scontrino, con ristampa se il cliente non ha lo scontrino.',
     legend: EMOTIQ_LEGEND,
@@ -1688,7 +1692,7 @@ const PRINTERS = [
     id: 'emotiq-ripristino',
     name: 'Ripristino Opera',
     brand: 'Emotiq',
-    printer: 'Emotiq Nota / Model M / Opera 57',
+    printer: 'Emotiq Opera 57',
     op: 'Ripristino Opera',
     summary: 'Reimpostazione di data, ora e dati fiscali dopo un reset della cassa.',
     needs: ['C.F. e P.IVA del cliente'],
@@ -1734,7 +1738,7 @@ const PRINTERS = [
     id: 'emotiq-non-invia',
     name: 'Opera non invia',
     brand: 'Emotiq',
-    printer: 'Emotiq Nota / Model M / Opera 57',
+    printer: 'Emotiq Opera 57',
     op: 'Opera non invia',
     summary: 'Controllo della rete, ricollegamento e invio dei corrispettivi sospesi.',
     needs: ['Nome (SSID) e password della rete del cliente'],
@@ -1795,7 +1799,7 @@ const PRINTERS = [
     id: 'emotiq-lotteria',
     name: 'Disattivazione lotteria Emotiq',
     brand: 'Emotiq',
-    printer: 'Emotiq Nota / Model M / Opera 57',
+    printer: ['Emotiq Model M', 'Emotiq Nota', 'Emotiq Opera 57'],
     op: 'Disattivazione lotteria',
     summary: 'Controllo e disattivazione della lotteria.',
     legend: EMOTIQ_LEGEND,
@@ -1829,7 +1833,7 @@ const PRINTERS = [
     id: 'emotiq-disattivazione',
     name: 'Disattivazione Emotiq',
     brand: 'Emotiq',
-    printer: 'Emotiq Nota / Model M / Opera 57',
+    printer: ['Emotiq Model M', 'Emotiq Nota', 'Emotiq Opera 57'],
     op: 'Disattivazione',
     summary: 'Chiusura e disattivazione della cassa.',
     needs: ['C.F. del tecnico e P.IVA del laboratorio'],
@@ -1862,7 +1866,7 @@ const PRINTERS = [
     id: 'epson-annullo',
     name: 'Annullo scontrino Epson',
     brand: 'Epson',
-    printer: 'Epson',
+    printer: 'Epson FP-81 II RT',
     op: 'Annullo scontrino',
     summary: 'Annullamento di uno scontrino.',
     steps: [
@@ -1890,7 +1894,7 @@ const PRINTERS = [
     id: 'epson-lettura',
     name: 'Lettura giornaliera Epson',
     brand: 'Epson',
-    printer: 'Epson',
+    printer: 'Epson FP-81 II RT',
     op: 'Lettura giornaliera',
     summary: 'Stampa della lettura giornaliera dal tastierino.',
     steps: [
@@ -1918,7 +1922,7 @@ const PRINTERS = [
     id: 'epson-ip-verifica',
     name: 'Verifica indirizzo IP Epson FP-81 II RT',
     brand: 'Epson',
-    printer: 'Epson',
+    printer: 'Epson FP-81 II RT',
     op: 'Verifica indirizzo IP',
     summary: 'Lettura dal tastierino dell\'indirizzo IP impostato sulla stampante.',
     steps: [
@@ -1949,7 +1953,7 @@ const PRINTERS = [
     id: 'epson-ip',
     name: 'Cambio indirizzo IP Epson FP-81 II RT',
     brand: 'Epson',
-    printer: 'Epson',
+    printer: 'Epson FP-81 II RT',
     op: 'Cambio indirizzo IP',
     summary: 'Impostazione di un IP fisso dalla funzione S19 (rete), con DHCP disattivato.',
     needs: ['Indirizzo IP, subnet mask e gateway da usare'],
@@ -2261,7 +2265,7 @@ PRINTERS.push(
     id: 'emotiq-cambio-rs',
     name: 'Cambio ragione sociale Emotiq',
     brand: 'Emotiq',
-    printer: 'Emotiq Nota / Model M / Opera 57',
+    printer: ['Emotiq Model M', 'Emotiq Nota', 'Emotiq Opera 57'],
     op: 'Cambio ragione sociale',
     summary: 'Chiusura, disattivazione, estensione DGFE, attivazione, nuova intestazione, aggiornamento e verifica.',
     needs: [
@@ -2778,7 +2782,7 @@ const FUNCTION_PAGES = [
   },
   {
     id: 'emotiq',
-    printer: 'Emotiq Nota / Model M / Opera 57',
+    printer: ['Emotiq Model M', 'Emotiq Nota', 'Emotiq Opera 57'],
     name: 'Funzioni Emotiq',
     meta: 'Funzioni utili con la sequenza dei tasti',
     intro: 'Funzioni utili delle casse Emotiq. SBT = subtotale.',

@@ -115,14 +115,29 @@
   function photoImg(src, cls) {
     return '<img class="' + cls + '" src="' + esc(src) + '" alt="" loading="lazy">';
   }
-  function printerLabel(p) { return printersOf(p).join(' / '); }
+  // Modelli di più marche o della stessa marca: "Emotiq Model M / Nota / Opera 57"
+  function printerLabel(p) {
+    return printersOf(p).map(function (m, i) {
+      var b = brandOf(m);
+      return i && b === brandOf(printersOf(p)[i - 1]) ? shortModel(m) : m;
+    }).join(' / ');
+  }
+  function brandOf(model) {
+    for (var i = 0; i < PRINTER_BRANDS.length; i++) if (PRINTER_BRANDS[i].models.indexOf(model) !== -1) return PRINTER_BRANDS[i].brand;
+    return '';
+  }
+  // Nome del modello senza la marca: "Emotiq Model M" -> "Model M"
+  function shortModel(model) {
+    var b = brandOf(model);
+    return b && model.indexOf(b + ' ') === 0 ? model.slice(b.length + 1) : model;
+  }
 
   // Operazioni disponibili per un modello: procedure (in ordine di OPERATIONS) e pagine dei codici
   function opsFor(model) {
     var procs = PRINTERS.filter(function (p) { return printersOf(p).indexOf(model) !== -1; })
       .sort(function (a, b) { return OPERATIONS.indexOf(a.op) - OPERATIONS.indexOf(b.op); })
       .map(function (p) { return { label: p.op, href: '#/p/' + p.id, p: p }; });
-    var fns = FUNCTION_PAGES.filter(function (f) { return f.printer === model; })
+    var fns = FUNCTION_PAGES.filter(function (f) { return [].concat(f.printer).indexOf(model) !== -1; })
       .map(function (f) { return { label: FN_OP, href: '#/funzioni/' + f.id, f: f }; });
     return procs.concat(fns);
   }
@@ -140,26 +155,41 @@
       '<div class="nav-head"><span class="nav-title">Stampanti</span>' +
         '<button class="icon-btn nav-close" data-action="close-nav" aria-label="Chiudi il menu">' + ICON.close + '</button></div>' +
       '<a class="nav-link nav-home" href="#/">Home</a>' +
-      PRINTER_MODELS.map(function (model) {
-        var photo = photosOf(model)[0];
-        return '<details class="nav-group"><summary>' +
-          '<span class="nav-thumb">' + (photo ? photoImg(photo, 'nav-thumb-img') : ICON.printer) + '</span>' +
-          '<span class="nav-model">' + esc(model) + '</span></summary>' +
-          opsFor(model).map(function (o) { return link(o.href, o.label); }).join('') + '</details>';
+      PRINTER_BRANDS.map(function (b) {
+        // marca con un solo modello: il modello è la voce principale
+        if (b.models.length === 1) return modelGroup(b.models[0], b.models[0], 'nav-group');
+        return '<details class="nav-group nav-brand"><summary>' +
+          '<span class="nav-thumb">' + thumb(b.models[0]) + '</span>' +
+          '<span class="nav-model">' + esc(b.brand) + '<span class="nav-count">' + b.models.length + ' modelli</span></span></summary>' +
+          b.models.map(function (m) { return modelGroup(m, shortModel(m), 'nav-sub'); }).join('') +
+        '</details>';
       }).join('');
+    function thumb(model) {
+      var photo = photosOf(model)[0];
+      return photo ? photoImg(photo, 'nav-thumb-img') : ICON.printer;
+    }
+    function modelGroup(model, label, cls) {
+      return '<details class="' + cls + '"><summary>' +
+        '<span class="nav-thumb">' + thumb(model) + '</span>' +
+        '<span class="nav-model">' + esc(label) + '</span></summary>' +
+        opsFor(model).map(function (o) { return link(o.href, o.label); }).join('') + '</details>';
+    }
   }
 
   // Evidenzia la voce della pagina aperta (anche dentro una procedura)
   function updateNav() {
     var m = location.hash.match(/^#\/(p|funzioni)\/([^/]+)/);
     var current = m ? '#/' + m[1] + '/' + m[2] : (/^#?\/?$/.test(location.hash) ? '#/' : (location.hash === '#/funzioni' ? '#/funzioni/custom' : ''));
+    var opened = false;
     nav.querySelectorAll('.nav-link').forEach(function (a) {
       var on = a.getAttribute('href') === current;
       a.classList.toggle('is-active', on);
       if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
-      // apre la stampante della pagina aperta (le altre restano come le ha lasciate l'utente)
-      var group = a.closest('details');
-      if (on && group) group.open = true;
+      // apre marca e modello della pagina aperta (solo il primo, se la procedura vale per più modelli)
+      if (on && !opened) {
+        opened = true;
+        for (var d = a.closest('details'); d; d = d.parentElement.closest('details')) d.open = true;
+      }
     });
   }
 
@@ -286,8 +316,10 @@
         '<section class="picker">' +
           '<label class="pick-field"><span class="field-label">Marca e modello</span>' +
             '<select data-pick="printer"><option value="">Scegli la stampante</option>' +
-              PRINTER_MODELS.map(function (m) {
-                return '<option' + (m === homePick.printer ? ' selected' : '') + '>' + esc(m) + '</option>';
+              PRINTER_BRANDS.map(function (b) {
+                return '<optgroup label="' + esc(b.brand) + '">' + b.models.map(function (m) {
+                  return '<option value="' + esc(m) + '"' + (m === homePick.printer ? ' selected' : '') + '>' + esc(m) + '</option>';
+                }).join('') + '</optgroup>';
               }).join('') +
             '</select></label>' +
           '<div class="pick-photo">' + pickPhoto() + '</div>' +
@@ -432,7 +464,7 @@
       if (!n) return;
       html += '<div class="result">' +
         '<a class="result-head" href="#/funzioni/' + f.id + '/' + encodeURIComponent(q.trim()) + '">' +
-          '<span class="result-cat">' + esc(f.printer) + '</span>' +
+          '<span class="result-cat">' + esc(printerLabel(f)) + '</span>' +
           '<span class="printer-name">' + FN_OP + '</span>' +
           '<span class="printer-meta">' + n + (n === 1 ? ' funzione trovata' : ' funzioni trovate') + '</span>' +
         '</a>' +
