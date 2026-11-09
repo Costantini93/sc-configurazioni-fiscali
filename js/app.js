@@ -111,6 +111,10 @@
   var FN_OP = 'Codici e funzioni';
 
   function printersOf(p) { return [].concat(p.printer); }
+  function photosOf(model) { return PRINTER_PHOTOS[model] || []; }
+  function photoImg(src, cls) {
+    return '<img class="' + cls + '" src="' + esc(src) + '" alt="" loading="lazy">';
+  }
   function printerLabel(p) { return printersOf(p).join(' / '); }
 
   // Operazioni disponibili per un modello: procedure (in ordine di OPERATIONS) e pagine dei codici
@@ -137,7 +141,10 @@
         '<button class="icon-btn nav-close" data-action="close-nav" aria-label="Chiudi il menu">' + ICON.close + '</button></div>' +
       '<a class="nav-link nav-home" href="#/">Home</a>' +
       PRINTER_MODELS.map(function (model) {
-        return '<details class="nav-group"><summary>' + esc(model) + '</summary>' +
+        var photo = photosOf(model)[0];
+        return '<details class="nav-group"><summary>' +
+          '<span class="nav-thumb">' + (photo ? photoImg(photo, 'nav-thumb-img') : ICON.printer) + '</span>' +
+          '<span class="nav-model">' + esc(model) + '</span></summary>' +
           opsFor(model).map(function (o) { return link(o.href, o.label); }).join('') + '</details>';
       }).join('');
   }
@@ -255,6 +262,9 @@
         return '<option value="' + esc(o.href) + '"' + (o.href === selected ? ' selected' : '') + '>' + esc(o.label) + '</option>';
       }).join('') : '');
   }
+  function pickPhoto() {
+    return photosOf(homePick.printer).map(function (src) { return photoImg(src, 'pick-photo-img'); }).join('');
+  }
   function pickResult() {
     if (!homePick.href) return '';
     var o = opsFor(homePick.printer).filter(function (x) { return x.href === homePick.href; })[0];
@@ -280,6 +290,7 @@
                 return '<option' + (m === homePick.printer ? ' selected' : '') + '>' + esc(m) + '</option>';
               }).join('') +
             '</select></label>' +
+          '<div class="pick-photo">' + pickPhoto() + '</div>' +
           '<label class="pick-field"><span class="field-label">Operazione</span>' +
             '<select data-pick="op"' + (homePick.printer ? '' : ' disabled') + '>' + opOptions(homePick.printer, homePick.href) + '</select></label>' +
           '<div class="pick-result">' + pickResult() + '</div>' +
@@ -300,6 +311,7 @@
       var op = app.querySelector('[data-pick="op"]');
       op.innerHTML = opOptions(homePick.printer, '');
       op.disabled = !homePick.printer;
+      app.querySelector('.pick-photo').innerHTML = pickPhoto();
     } else {
       homePick.href = el.value;
     }
@@ -486,7 +498,9 @@
       topbar('<a class="icon-btn" href="#/" aria-label="Torna alle procedure">' + ICON.back + '</a>') +
       '<main class="content">' +
         '<div class="overview-head">' +
-          '<span class="printer-icon lg">' + ICON.printer + '</span>' +
+          (photosOf(printersOf(p)[0])[0]
+            ? '<span class="printer-photo">' + photoImg(photosOf(printersOf(p)[0])[0], 'printer-photo-img') + '</span>'
+            : '<span class="printer-icon lg">' + ICON.printer + '</span>') +
           '<div><h1>' + esc(p.name) + '</h1><p class="muted">' + esc(p.summary) + '</p></div>' +
         '</div>' +
         (needs ? '<section class="panel"><h2>Cosa ti serve</h2><ul class="checklist">' + needs + '</ul></section>' : '') +

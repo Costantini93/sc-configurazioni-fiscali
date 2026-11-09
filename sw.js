@@ -1,5 +1,5 @@
 // Quando si aggiungono nuovi file (es. immagini) inserirli in FILES e aumentare la versione.
-var CACHE = 'sc-config-v25';
+var CACHE = 'sc-config-v26';
 
 var FILES = [
   './',
@@ -12,7 +12,12 @@ var FILES = [
   'assets/logo-dark.png',
   'assets/icon-192.png',
   'assets/icon-512.png',
-  'assets/apple-touch-icon.png'
+  'assets/apple-touch-icon.png',
+  'assets/printers/custom.jpg',
+  'assets/printers/3i-rt-1.jpg',
+  'assets/printers/3i-rt-2.jpg',
+  'assets/printers/emotiq-model-m.jpg',
+  'assets/printers/rch-print-f.jpg'
 ];
 
 self.addEventListener('install', function (e) {

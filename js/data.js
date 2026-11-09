@@ -58,6 +58,15 @@ const PRINTER_MODELS = [
   'RCH Print F'
 ];
 
+// Foto delle stampanti (in assets/printers), mostrate nel menu, in home e nella pagina della procedura.
+// Se un modello non ha foto si vede l'icona della stampante.
+const PRINTER_PHOTOS = {
+  'Custom Big': ['assets/printers/custom.jpg'],
+  '3i RT 30 / RT 40': ['assets/printers/3i-rt-1.jpg', 'assets/printers/3i-rt-2.jpg'],
+  'Emotiq Nota / Model M / Opera 57': ['assets/printers/emotiq-model-m.jpg'],
+  'RCH Print F': ['assets/printers/rch-print-f.jpg']
+};
+
 const OPERATIONS = [
   'Preparazione',
   'Verifica periodica',
