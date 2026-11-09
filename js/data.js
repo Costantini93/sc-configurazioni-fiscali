@@ -2247,6 +2247,15 @@ const PRINTERS = [
           { type: 'image', src: 'assets/cic/tasto-compila-piva.png', alt: 'Tasto per compilare i dati dalla partita IVA', caption: 'Compila in automatico i dati dell\'esercente dalla partita IVA.' },
           { type: 'list', items: ['Completa gli altri dati richiesti.'] }
         ]
+      },
+      {
+        phase: 'Back office',
+        title: 'Abilita la gestione corrispettivi',
+        where: 'web',
+        blocks: [
+          { type: 'seq', seq: [{ m: 'Impostazioni account' }, { m: 'Generali' }, { m: 'Gestione corrispettivi' }] },
+          { type: 'list', items: ['Abilita la gestione corrispettivi e salva.'] }
+        ]
       }
     ]
   }
