@@ -331,6 +331,16 @@ h1, h2 { margin: 0; line-height: 1.25; }
   font-weight: 550; font-size: 15px;
 }
 .result-step:hover { background: var(--surface-2); }
+.list-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.list-head .list-title { margin: 0 4px; }
+.btn-reset {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 36px; padding: 0 12px; border-radius: 999px; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--line);
+  font-size: 14px; font-weight: 650; color: var(--muted);
+}
+.btn-reset svg { font-size: 16px; }
+.btn-reset:hover { color: var(--warn-ink); border-color: var(--warn-line); background: var(--warn-bg); }
 .list-title {
   margin: 12px 4px -2px;
   font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 700;

@@ -390,7 +390,11 @@
             '<select data-pick="op"' + (homePick.printer ? '' : ' disabled') + '>' + opOptions(homePick.printer, homePick.href) + '</select></label>' +
           '<div class="pick-result">' + pickResult() + '</div>' +
         '</section>' +
-        (inProgress.length ? '<div class="list-title">In corso</div>' + inProgress.map(function (p) { return procCard(p); }).join('') : '') +
+        (inProgress.length
+          ? '<div class="list-head"><span class="list-title">In corso</span>' +
+              '<button class="btn-reset" data-action="reset-all">' + ICON.restart + 'Ripristina tutto</button></div>' +
+            inProgress.map(function (p) { return procCard(p); }).join('')
+          : '') +
         '<div class="list-title">Oppure cerca</div>' +
         '<label class="fn-search home-search">' + ICON.search +
           '<input type="search" data-home-search placeholder="Cerca procedura, codice o passaggio" autocomplete="off" aria-label="Cerca nelle procedure" value="' + esc(homeQuery) + '">' +
@@ -789,6 +793,15 @@
     switch (action) {
       case 'open-nav': openNav(); break;
       case 'theme': cycleTheme(); break;
+      case 'reset-all': {
+        var n = Object.keys(store.progress).length;
+        if (confirm('Vuoi riportare allo step 1 ' + (n === 1 ? 'la procedura in corso' : 'tutte le ' + n + ' procedure in corso') + '? Anche i valori annotati (es. indirizzi IP) verranno cancellati.')) {
+          store.progress = {};
+          saveStore();
+          route();
+        }
+        break;
+      }
       case 'next': next(); break;
       case 'prev': prev(); break;
       case 'start':
