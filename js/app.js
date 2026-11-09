@@ -133,7 +133,7 @@
   // Barra superiore fissa con il logo sempre visibile al centro.
   // Su mobile a sinistra c'è il pulsante del menu (tranne dentro una procedura: noMenu).
   function topbar(left, right, noMenu) {
-    var menuBtn = noMenu ? '' : '<button class="icon-btn menu-btn" data-action="open-nav" aria-label="Apri il menu" aria-controls="nav">' + ICON.menu + '</button>';
+    var menuBtn = noMenu ? '' : '<button class="icon-btn menu-btn" data-action="open-nav" aria-label="Apri il menu" aria-controls="nav" aria-expanded="false">' + ICON.menu + '</button>';
     return '<header class="topbar">' +
       '<span class="topbar-side">' + menuBtn + (left || '') + '</span>' +
       '<a class="topbar-logo" href="#/" aria-label="Home">' + logo('topbar-logo-img') + '</a>' +
@@ -156,7 +156,9 @@
     var box = document.createElement('div');
     box.className = 'zoom-root';
     box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
     box.setAttribute('aria-label', label || 'Foto della stampante');
+    rememberFocus();
     box.innerHTML = '<div class="zoom-backdrop" data-action="close-zoom"></div>' +
       '<figure class="zoom-box">' +
         '<button class="icon-btn zoom-close" data-action="close-zoom" aria-label="Chiudi">' + ICON.close + '</button>' +
@@ -171,7 +173,32 @@
   }
   function closeZoom() {
     var box = document.querySelector('.zoom-root');
-    if (box) box.remove();
+    if (box) { box.remove(); restoreFocus(); }
+  }
+
+  // ---------- Focus nelle finestre (foto, elenco step, menu su telefono) ----------
+
+  var lastFocus = null;
+  function rememberFocus() { lastFocus = document.activeElement; }
+  function restoreFocus() {
+    if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+    lastFocus = null;
+  }
+  // Tab e Maiusc+Tab restano dentro la finestra aperta
+  function trapTab(e, container) {
+    var items = Array.prototype.filter.call(
+      container.querySelectorAll('a[href], button:not([disabled]), input, select, summary, [tabindex]:not([tabindex="-1"])'),
+      function (el) {
+        // escluso ciò che è nascosto, anche dentro un gruppo del menu chiuso (il suo titolo resta raggiungibile)
+        var closed = el.closest('details:not([open])');
+        if (closed && !(el.tagName === 'SUMMARY' && el.parentElement === closed)) return false;
+        return el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+      }
+    );
+    if (!items.length) return;
+    var first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   }
   function photoImg(src, cls) {
     return '<img class="' + cls + '" src="' + esc(src) + '" alt="" loading="lazy">';
@@ -255,12 +282,25 @@
     });
   }
 
+  // Su telefono il menu è una finestra sopra la pagina; su desktop è sempre visibile
+  function navIsOverlay() { return !window.matchMedia('(min-width: 1024px)').matches; }
+  function setMenuExpanded(open) {
+    document.querySelectorAll('.menu-btn').forEach(function (b) { b.setAttribute('aria-expanded', open ? 'true' : 'false'); });
+  }
   function openNav() {
+    rememberFocus();
     document.body.classList.add('nav-open');
+    setMenuExpanded(true);
     var active = nav.querySelector('.is-active');
     if (active) active.scrollIntoView({ block: 'center' });
+    (active || nav.querySelector('.nav-close')).focus({ preventScroll: true });
   }
-  function closeNav() { document.body.classList.remove('nav-open'); }
+  function closeNav() {
+    if (!document.body.classList.contains('nav-open')) return;
+    document.body.classList.remove('nav-open');
+    setMenuExpanded(false);
+    restoreFocus();
+  }
 
   nav.addEventListener('click', function (e) {
     if (e.target.closest('[data-action="theme"]')) return cycleTheme();
@@ -376,9 +416,8 @@
     return '<div class="screen home">' +
       topbar() +
       '<header class="hero">' +
-        '<div class="brand-name">Configurazioni fiscali</div>' +
-        '<h1>Quale procedura vuoi seguire?</h1>' +
-        '<p class="lead">Scegli la stampante e l\'operazione. Conferma ogni step con la V verde.</p>' +
+        '<h1>Quale cassa hai davanti?</h1>' +
+        '<p class="lead">Scegli il modello e cosa devi fare: la guida ti accompagna tasto per tasto.</p>' +
       '</header>' +
       '<main class="printer-list">' +
         '<section class="picker">' +
@@ -663,7 +702,7 @@
         }).join('') + '</div>';
     }).join('');
     return '<div class="sheet-backdrop" data-action="close-sheet"></div>' +
-      '<div class="sheet" role="dialog" aria-label="Elenco degli step">' +
+      '<div class="sheet" role="dialog" aria-modal="true" aria-label="Elenco degli step">' +
         '<div class="sheet-head"><h2>Tutti gli step</h2>' +
         '<button class="icon-btn" data-action="close-sheet" aria-label="Chiudi">' + ICON.close + '</button></div>' +
         '<div class="sheet-body">' + html + '</div>' +
@@ -740,6 +779,11 @@
     }
     render(viewHome());
     if (homeQuery) filterHome();
+  }
+
+  function closeSheet() {
+    var root = app.querySelector('.sheet-root');
+    if (root) { root.remove(); restoreFocus(); }
   }
 
   function render(html) {
@@ -822,19 +866,19 @@
         }
         break;
       case 'steps': {
+        rememberFocus();
         var wrap = document.createElement('div');
         wrap.className = 'sheet-root';
         wrap.innerHTML = viewStepsSheet(p, currentStep());
         app.appendChild(wrap);
         var cur = wrap.querySelector('.sheet-step.current');
         if (cur) cur.scrollIntoView({ block: 'center' });
+        (cur || wrap.querySelector('[data-action="close-sheet"].icon-btn')).focus({ preventScroll: true });
         break;
       }
-      case 'close-sheet': {
-        var root = app.querySelector('.sheet-root');
-        if (root) root.remove();
+      case 'close-sheet':
+        closeSheet();
         break;
-      }
     }
   });
 
@@ -855,19 +899,24 @@
   document.addEventListener('keydown', function (e) {
     if (document.querySelector('.zoom-root')) {
       if (e.key === 'Escape') closeZoom();
+      else if (e.key === 'Tab') trapTab(e, document.querySelector('.zoom-root'));
       return;
     }
-    if (document.body.classList.contains('nav-open')) {
+    if (document.body.classList.contains('nav-open') && navIsOverlay()) {
       if (e.key === 'Escape') closeNav();
+      else if (e.key === 'Tab') trapTab(e, nav);
       return;
     }
     if (currentStep() < 0) return;
     if (app.querySelector('.sheet-root')) {
-      if (e.key === 'Escape') app.querySelector('.sheet-root').remove();
+      if (e.key === 'Escape') closeSheet();
+      else if (e.key === 'Tab') trapTab(e, app.querySelector('.sheet'));
       return;
     }
     var typing = e.target.tagName === 'INPUT';
-    if (e.key === 'Enter') { e.preventDefault(); next(); }
+    // Invio su un pulsante o un link lo attiva; altrove (o dentro un campo) passa allo step successivo
+    var control = /^(BUTTON|A|SELECT|SUMMARY|TEXTAREA)$/.test(e.target.tagName);
+    if (e.key === 'Enter' && !control) { e.preventDefault(); next(); }
     else if (!typing && e.key === 'ArrowRight') next();
     else if (!typing && e.key === 'ArrowLeft') prev();
   });

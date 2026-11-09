@@ -24,6 +24,8 @@ Per provarla in locale: `python3 -m http.server` nella cartella del progetto e a
 
 Valgono per ogni modifica all'interfaccia.
 
+- **Caratteri:** Barlow per il testo, Barlow Semi Condensed (solo 600) per titoli, tasti e codici numerici (con `font-variant-numeric: tabular-nums`). Sono in `assets/fonts` (licenza OFL), richiamati con le variabili `--font` e `--font-key`. Niente font monospace di sistema.
+- **Elemento distintivo:** i tasti della cassa (`.cap`, `.cap-num`) sono la parte più curata dell'interfaccia; il resto resta sobrio.
 - **Tipografia:** al massimo tre pesi (400, 500, 600), mai sopra 600. Corpo 16px, testo secondario 14px, nessun testo sotto 12px. Il 12px solo per note e metadati. Titoli con interlinea 1.1 a 1.25, testo con 1.5 a 1.6.
 - **Colori:** sempre tramite le variabili, in entrambi i temi. Ogni colore nuovo va definito chiaro e scuro, con contrasto leggibile. Il colore da solo non basta mai a comunicare uno stato: aggiungi testo o icona.
 - **Niente decorazione:** no sfocature (`backdrop-filter`), no sfondi sfumati sui pulsanti, no pillole attorno a testo statico, no illustrazioni di persone negli stati vuoti.

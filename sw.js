@@ -1,5 +1,5 @@
 // Quando si aggiungono nuovi file (es. immagini) inserirli in FILES e aumentare la versione.
-var CACHE = 'sc-config-v37';
+var CACHE = 'sc-config-v38';
 
 var FILES = [
   './',
@@ -8,6 +8,11 @@ var FILES = [
   'favicon.ico',
   'assets/icon-32.png',
   'css/style.css',
+  'assets/fonts/barlow-latin-400-normal.woff2',
+  'assets/fonts/barlow-latin-400-italic.woff2',
+  'assets/fonts/barlow-latin-500-normal.woff2',
+  'assets/fonts/barlow-latin-600-normal.woff2',
+  'assets/fonts/barlow-semi-condensed-latin-600-normal.woff2',
   'js/data.js',
   'js/app.js',
   'assets/logo.png',
