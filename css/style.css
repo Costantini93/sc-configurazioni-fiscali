@@ -29,7 +29,7 @@
   color-scheme: light;
 }
 
-/* Tema scuro: la classe theme-dark su <html> la mette lo script in index.html (automatico, chiaro o scuro) */
+/* Tema scuro: la classe theme-dark su <html> la mette lo script in index.html (scelta chiaro/scuro) */
 :root.theme-dark {
   --bg: #0b1220;
   --surface: #131c2e;

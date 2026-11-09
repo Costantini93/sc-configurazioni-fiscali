@@ -21,7 +21,6 @@
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>',
     sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
     moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
-    auto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" /><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>',
     restart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>'
   };
 
@@ -100,26 +99,25 @@
 
   // ---------- Tema chiaro / scuro ----------
 
+  // Al primo avvio si parte dal tema del dispositivo; poi vale la scelta fatta con il pulsante
   var THEME_KEY = 'sc-theme';
   var THEMES = {
-    auto: { label: 'Tema automatico', icon: 'auto', next: 'light' },
-    light: { label: 'Tema chiaro', icon: 'sun', next: 'dark' },
-    dark: { label: 'Tema scuro', icon: 'moon', next: 'auto' }
+    light: { icon: 'moon', label: 'Passa al tema scuro', next: 'dark' },
+    dark: { icon: 'sun', label: 'Passa al tema chiaro', next: 'light' }
   };
-  var darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
   function getTheme() {
     var t; try { t = localStorage.getItem(THEME_KEY); } catch (e) { /* storage non disponibile */ }
-    return THEMES[t] ? t : 'auto';
+    if (THEMES[t]) return t;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
   function applyTheme() {
     var t = getTheme();
-    var dark = t === 'dark' || (t === 'auto' && darkQuery.matches);
-    document.documentElement.classList.toggle('theme-dark', dark);
+    document.documentElement.classList.toggle('theme-dark', t === 'dark');
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', dark ? '#0b1220' : '#ffffff');
+    if (meta) meta.setAttribute('content', t === 'dark' ? '#0b1220' : '#ffffff');
     document.querySelectorAll('.theme-btn').forEach(function (b) {
       b.innerHTML = ICON[THEMES[t].icon];
-      b.setAttribute('aria-label', THEMES[t].label + ' (tocca per cambiare)');
+      b.setAttribute('aria-label', THEMES[t].label);
       b.setAttribute('title', THEMES[t].label);
     });
   }
@@ -129,9 +127,8 @@
   }
   function themeBtn() {
     var t = getTheme();
-    return '<button class="icon-btn theme-btn" data-action="theme" aria-label="' + THEMES[t].label + ' (tocca per cambiare)" title="' + THEMES[t].label + '">' + ICON[THEMES[t].icon] + '</button>';
+    return '<button class="icon-btn theme-btn" data-action="theme" aria-label="' + THEMES[t].label + '" title="' + THEMES[t].label + '">' + ICON[THEMES[t].icon] + '</button>';
   }
-  if (darkQuery.addEventListener) darkQuery.addEventListener('change', applyTheme);
 
   // Barra superiore fissa con il logo sempre visibile al centro.
   // Su mobile a sinistra c'è il pulsante del menu (tranne dentro una procedura: noMenu).
