@@ -141,7 +141,7 @@
   function photoImg(src, cls) {
     return '<img class="' + cls + '" src="' + esc(src) + '" alt="" loading="lazy">';
   }
-  // Modelli di più marche o della stessa marca: "Emotiq Model M / Nota / Opera 57"
+  // Modelli di più marche o della stessa marca: "Emotiq Model M / Nota / Opera 2"
   function printerLabel(p) {
     return printersOf(p).map(function (m, i) {
       var b = brandOf(m);

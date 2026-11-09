@@ -1,5 +1,5 @@
 // Quando si aggiungono nuovi file (es. immagini) inserirli in FILES e aumentare la versione.
-var CACHE = 'sc-config-v29';
+var CACHE = 'sc-config-v30';
 
 var FILES = [
   './',
@@ -20,7 +20,7 @@ var FILES = [
   'assets/printers/3i-rt-2.jpg',
   'assets/printers/emotiq-model-m.jpg',
   'assets/printers/emotiq-nota.jpg',
-  'assets/printers/emotiq-opera-57.jpg',
+  'assets/printers/emotiq-opera-2.jpg',
   'assets/printers/epson-fp-81.jpg',
   'assets/printers/rch-print-f.jpg'
 ];
