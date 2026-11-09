@@ -1,10 +1,12 @@
 // Quando si aggiungono nuovi file (es. immagini) inserirli in FILES e aumentare la versione.
-var CACHE = 'sc-config-v34';
+var CACHE = 'sc-config-v35';
 
 var FILES = [
   './',
   'index.html',
   'manifest.webmanifest',
+  'favicon.ico',
+  'assets/icon-32.png',
   'css/style.css',
   'js/data.js',
   'js/app.js',
