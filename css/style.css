@@ -29,35 +29,34 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0b1220;
-    --surface: #131c2e;
-    --surface-2: #1a2438;
-    --ink: #e8edf5;
-    --muted: #93a1b5;
-    --line: #26324a;
-    --brand: #e8edf5;
-    --brand-2: #00879a;
-    --accent: #2cc4d6;
-    --ok: #22c55e;
-    --ok-press: #16a34a;
-    --ok-soft: #14532d;
-    --warn-ink: #fdba74;
-    --warn-bg: #2a1a0e;
-    --warn-line: #7c2d12;
-    --info-ink: #6fd6e3;
-    --info-bg: #0b2a30;
-    --info-line: #135561;
-    --tip-ink: #86efac;
-    --tip-bg: #0d2318;
-    --tip-line: #166534;
-    --cap-bg: linear-gradient(#2a3650, #1f2a40);
-    --cap-line: #3a4864;
-    --cap-shadow: #0a0f1a;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
-    color-scheme: dark;
-  }
+/* Tema scuro: la classe theme-dark su <html> la mette lo script in index.html (automatico, chiaro o scuro) */
+:root.theme-dark {
+  --bg: #0b1220;
+  --surface: #131c2e;
+  --surface-2: #1a2438;
+  --ink: #e8edf5;
+  --muted: #93a1b5;
+  --line: #26324a;
+  --brand: #e8edf5;
+  --brand-2: #00879a;
+  --accent: #2cc4d6;
+  --ok: #22c55e;
+  --ok-press: #16a34a;
+  --ok-soft: #14532d;
+  --warn-ink: #fdba74;
+  --warn-bg: #2a1a0e;
+  --warn-line: #7c2d12;
+  --info-ink: #6fd6e3;
+  --info-bg: #0b2a30;
+  --info-line: #135561;
+  --tip-ink: #86efac;
+  --tip-bg: #0d2318;
+  --tip-line: #166534;
+  --cap-bg: linear-gradient(#2a3650, #1f2a40);
+  --cap-line: #3a4864;
+  --cap-shadow: #0a0f1a;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -101,6 +100,9 @@ h1, h2 { margin: 0; line-height: 1.25; }
 .topbar-side.right { justify-content: flex-end; }
 .topbar-logo { display: flex; justify-content: center; align-items: center; min-width: 0; }
 .topbar-logo-img { display: block; height: 40px; width: auto; }
+.logo-dark, .theme-dark .logo-light { display: none; }
+.theme-dark .logo-dark { display: block; }
+.theme-btn { font-size: 20px; }
 .icon-btn {
   width: 44px; height: 44px; border-radius: 12px;
   display: inline-flex; align-items: center; justify-content: center;
@@ -131,6 +133,7 @@ h1, h2 { margin: 0; line-height: 1.25; }
 .nav-open { overflow: hidden; }
 .nav-head { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 8px; }
 .nav-title { font-size: 18px; font-weight: 750; }
+.nav-head-actions { display: flex; gap: 8px; }
 .nav-group { margin-top: 10px; }
 .nav-group > summary {
   list-style: none; cursor: pointer;
@@ -139,7 +142,7 @@ h1, h2 { margin: 0; line-height: 1.25; }
   font-size: 15.5px; color: var(--ink); font-weight: 700; line-height: 1.3;
 }
 .nav-group[open] > summary { color: var(--brand-2); }
-@media (prefers-color-scheme: dark) { .nav-group[open] > summary { color: var(--accent); } }
+.theme-dark .nav-group[open] > summary { color: var(--accent); }
 .nav-group > summary::-webkit-details-marker { display: none; }
 .nav-group > summary::after { content: ''; width: 7px; height: 7px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); margin: -3px 4px 0 0; transition: transform .15s ease; }
 .nav-group:not([open]) > summary::after { transform: rotate(-45deg); margin-top: 0; }
@@ -150,7 +153,7 @@ h1, h2 { margin: 0; line-height: 1.25; }
   background: #fff; border: 1px solid var(--line); border-radius: 9px; overflow: hidden;
   color: var(--brand-2); font-size: 20px;
 }
-@media (prefers-color-scheme: dark) { .nav-thumb { color: #1b232c; } }
+.theme-dark .nav-thumb { color: #1b232c; }
 .nav-thumb-img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
 .nav-model { flex: 1; min-width: 0; }
 .nav-count { display: block; font-size: 12.5px; font-weight: 550; color: var(--muted); }
@@ -167,7 +170,7 @@ h1, h2 { margin: 0; line-height: 1.25; }
 .nav-sub summary:hover { background: var(--surface-2); }
 .nav-sub .nav-thumb { width: 30px; height: 30px; }
 .nav-sub[open] > summary { color: var(--brand-2); }
-@media (prefers-color-scheme: dark) { .nav-sub[open] > summary { color: var(--accent); } }
+.theme-dark .nav-sub[open] > summary { color: var(--accent); }
 .nav-group .nav-link { margin-left: 10px; padding-left: 12px; border-left: 2px solid var(--line); border-radius: 0 10px 10px 0; }
 .nav-group .nav-link.is-active { border-left-color: var(--accent); }
 .nav-link {
@@ -184,7 +187,7 @@ h1, h2 { margin: 0; line-height: 1.25; }
 @media (min-width: 1024px) {
   body { padding-left: 280px; }
   .nav { width: 280px; transform: none; visibility: visible; transition: none; padding-top: 20px; }
-  .nav-close, .menu-btn, .nav-backdrop { display: none; }
+  .nav-close, .menu-btn, .nav-backdrop, .topbar .theme-btn { display: none; }
   .nav-open { overflow: auto; }
   .sheet-root .sheet { left: 280px; }
 }
@@ -311,7 +314,7 @@ h1, h2 { margin: 0; line-height: 1.25; }
 }
 .pick-result:empty { display: none; }
 .pick-result .printer-card { box-shadow: none; border-color: var(--brand-2); }
-@media (prefers-color-scheme: dark) { .pick-result .printer-card { border-color: var(--accent); } }
+.theme-dark .pick-result .printer-card { border-color: var(--accent); }
 .pick-summary { margin: 8px 2px 0; font-size: 14px; color: var(--muted); }
 .home-search { margin: 0; top: 64px; box-shadow: var(--shadow); }
 .home-results { display: grid; gap: 12px; }
@@ -361,7 +364,7 @@ h1, h2 { margin: 0; line-height: 1.25; }
 .fn-howto + .fn-note { margin-top: 10px; }
 .fn-group { margin-top: 14px; }
 .fn-group-name { font-size: 13px; font-weight: 700; color: var(--brand-2); margin-bottom: 4px; }
-@media (prefers-color-scheme: dark) { .fn-group-name { color: var(--accent); } }
+.theme-dark .fn-group-name { color: var(--accent); }
 .fn-list { list-style: none; margin: 0; padding: 0; }
 .fn-list li { padding: 8px 0; border-top: 1px solid var(--line); font-size: 15px; font-weight: 550; }
 .fn-row { display: flex; align-items: baseline; gap: 12px; }
@@ -501,9 +504,7 @@ h1, h2 { margin: 0; line-height: 1.25; }
   background: var(--surface);
   font-weight: 650; font-size: 14.5px;
 }
-@media (prefers-color-scheme: dark) {
-  .tok-menu { color: var(--accent); border-color: var(--accent); }
-}
+.theme-dark .tok-menu { color: var(--accent); border-color: var(--accent); }
 .tok-text {
   height: 44px; display: inline-flex; align-items: center;
   font-style: italic; color: var(--ink); font-size: 15px; padding: 0 4px;
