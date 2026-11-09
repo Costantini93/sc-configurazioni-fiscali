@@ -37,7 +37,7 @@ Valgono per ogni modifica all'interfaccia.
 
 ## Skill da usare per il lavoro sull'interfaccia
 
-Sono installate come plugin nell'account di Alessandro, non fanno parte del repository.
+Sono plugin installati nell'account di Alessandro, non fanno parte del repository, e nelle sessioni cloud o da app possono mancare. Se una skill non è disponibile, applica comunque le regole scritte sopra.
 
 - Prima di costruire o cambiare una schermata: `frontend-design` e `vectorlab-ux-skills:page-patterns`.
 - Stile: `vectorlab-ux-skills:typography`, `colour-palette`, `spacing`, `anti-slop`.
