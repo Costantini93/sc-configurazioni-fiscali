@@ -17,6 +17,8 @@
  *     { type: 'table', head: [...], rows: [[...], ...] }
  *     { type: 'note',  kind: 'info'|'warn'|'tip', text }
  *     { type: 'input', var: 'ip', label, placeholder }  valore da annotare (riusabile con { v: 'ip' })
+ *     { type: 'link',  href, label }                    link a un sito (si apre in una nuova scheda)
+ *     { type: 'image', src, alt, caption? }             immagine (es. un tasto da premere)
  *
  * Token di una sequenza:
  *   { key: true }        tasto chiave (icona)
@@ -55,7 +57,8 @@ const PRINTER_BRANDS = [
   { brand: '3i', models: ['3i RT 30', '3i RT 40'] },
   { brand: 'Emotiq', models: ['Emotiq Model M', 'Emotiq Nota', 'Emotiq Opera 2'] },
   { brand: 'Epson', models: ['Epson FP-81 II RT'] },
-  { brand: 'RCH', models: ['RCH Print F'] }
+  { brand: 'RCH', models: ['RCH Print F'] },
+  { brand: 'Cassa in Cloud', models: ['Cassa in Cloud'] }
 ];
 
 // Foto delle stampanti (in assets/printers), mostrate nel menu, in home e nella pagina della procedura.
@@ -70,10 +73,12 @@ const PRINTER_PHOTOS = {
   'Emotiq Nota': ['assets/printers/emotiq-nota.jpg'],
   'Emotiq Opera 2': ['assets/printers/emotiq-opera-2.jpg'],
   'Epson FP-81 II RT': ['assets/printers/epson-fp-81.jpg'],
-  'RCH Print F': ['assets/printers/rch-print-f.jpg']
+  'RCH Print F': ['assets/printers/rch-print-f.jpg'],
+  'Cassa in Cloud': ['assets/cic/cassa-in-cloud-icon.png']
 };
 
 const OPERATIONS = [
+  'Installazione iniziale',
   'Preparazione',
   'Verifica periodica',
   'Annullo scontrino',
@@ -2178,6 +2183,69 @@ const PRINTERS = [
         where: 'printer',
         blocks: [
           { type: 'seq', seq: [{ m: 'VERIFICA PERIODICA' }, { t: 'OK' }] }
+        ]
+      }
+    ]
+  },
+
+  // ---------- Cassa in Cloud ----------
+
+  {
+    id: 'cic-installazione',
+    name: 'Installazione iniziale Cassa in Cloud',
+    brand: 'Cassa in Cloud',
+    printer: 'Cassa in Cloud',
+    op: 'Installazione iniziale',
+    summary: 'ID Apple del negozio, TeamSystem ID e creazione del cliente nel back office Cassa in Cloud.',
+    needs: [
+      'Nome del negozio del cliente',
+      'Partita IVA del cliente',
+      'Città dell\'installazione'
+    ],
+    steps: [
+      {
+        phase: 'Account',
+        title: 'Crea l\'ID Apple',
+        where: 'web',
+        blocks: [
+          { type: 'list', items: ['Crea un ID Apple con il nome del negozio del cliente.'] },
+          { type: 'input', var: 'appleid', label: 'ID Apple creato', placeholder: 'es. negozio@icloud.com' }
+        ]
+      },
+      {
+        phase: 'Account',
+        title: 'Crea il TeamSystem ID',
+        where: 'web',
+        blocks: [
+          { type: 'link', href: 'https://my.cassanova.com/login.html', label: 'Apri my.cassanova.com' },
+          { type: 'seq', seq: [
+            { m: 'Accedi con TeamSystem ID' }, { v: 'appleid', cap: 'mail dell\'ID Apple', empty: 'ID Apple non annotato' }, { m: 'Accedi' }
+          ] },
+          { type: 'list', items: ['Compila i dati richiesti.'] }
+        ]
+      },
+      {
+        phase: 'Back office',
+        title: 'Accedi al back office',
+        where: 'web',
+        blocks: [
+          { type: 'link', href: 'https://bo.cassanova.com', label: 'Apri bo.cassanova.com' },
+          { type: 'list', items: ['Esegui l\'accesso.'] }
+        ]
+      },
+      {
+        phase: 'Back office',
+        title: 'Crea il nuovo cliente',
+        where: 'web',
+        blocks: [
+          { type: 'seq', seq: [{ m: 'Nuovo cliente' }] },
+          { type: 'table', head: ['Campo', 'Valore'], rows: [
+            ['Codice cliente', 'Nome del negozio'],
+            ['Password', 'Città dell\'installazione + 2018! (es. Verona2018!)'],
+            ['Partita IVA', 'P.IVA del cliente, poi premi il tasto qui sotto']
+          ] },
+          { type: 'image', src: 'assets/cic/tasto-compila-piva.png', alt: 'Tasto per compilare i dati dalla partita IVA', caption: 'Compila in automatico i dati dell\'esercente dalla partita IVA.' },
+          { type: 'list', items: ['Completa gli altri dati richiesti.'] }
         ]
       }
     ]

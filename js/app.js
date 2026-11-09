@@ -313,6 +313,11 @@
           '</tbody></table></div>';
       case 'note':
         return '<div class="block note note-' + b.kind + '"><span class="note-icon">' + ICON[b.kind] + '</span><p>' + esc(b.text) + '</p></div>';
+      case 'link':
+        return '<a class="block link-btn" href="' + esc(b.href) + '" target="_blank" rel="noopener">' + ICON.web + '<span>' + esc(b.label) + '</span><span class="link-go">' + ICON.arrow + '</span></a>';
+      case 'image':
+        return '<figure class="block step-img"><img src="' + esc(b.src) + '" alt="' + esc(b.alt || '') + '">' +
+          (b.caption ? '<figcaption>' + esc(b.caption) + '</figcaption>' : '') + '</figure>';
       case 'input':
         return '<label class="block field"><span class="field-label">' + esc(b.label) + '</span>' +
           '<input type="text" inputmode="decimal" autocomplete="off" data-var="' + esc(b.var) + '" placeholder="' + esc(b.placeholder || '') + '" value="' + esc((vars && vars[b.var]) || '') + '"></label>';
@@ -480,7 +485,8 @@
       if (b.head) parts = parts.concat(b.head);
       if (b.rows) b.rows.forEach(function (r) { parts = parts.concat(r); });
       if (b.text) parts.push(b.text);
-      if (b.type === 'input') parts.push(b.label);
+      if (b.type === 'input' || b.type === 'link') parts.push(b.label);
+      if (b.caption) parts.push(b.caption);
     });
     return normalizeText(parts.join(' '));
   }

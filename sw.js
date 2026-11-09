@@ -1,5 +1,5 @@
 // Quando si aggiungono nuovi file (es. immagini) inserirli in FILES e aumentare la versione.
-var CACHE = 'sc-config-v35';
+var CACHE = 'sc-config-v36';
 
 var FILES = [
   './',
@@ -24,7 +24,10 @@ var FILES = [
   'assets/printers/emotiq-nota.jpg',
   'assets/printers/emotiq-opera-2.jpg',
   'assets/printers/epson-fp-81.jpg',
-  'assets/printers/rch-print-f.jpg'
+  'assets/printers/rch-print-f.jpg',
+  'assets/cic/cassa-in-cloud-icon.png',
+  'assets/cic/cassa-in-cloud-logo.png',
+  'assets/cic/tasto-compila-piva.png'
 ];
 
 self.addEventListener('install', function (e) {

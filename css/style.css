@@ -548,6 +548,24 @@ td:first-child { font-weight: 700; }
 .note-warn { background: var(--warn-bg); color: var(--warn-ink); border-color: var(--warn-line); }
 .note-tip { background: var(--tip-bg); color: var(--tip-ink); border-color: var(--tip-line); }
 
+/* Link e immagini */
+.link-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px; border-radius: 12px;
+  background: var(--info-bg); color: var(--info-ink); border: 1px solid var(--info-line);
+  font-weight: 650;
+}
+.link-btn svg { font-size: 20px; }
+.link-btn span:nth-child(2) { flex: 1; }
+.link-go { display: inline-flex; }
+.step-img { display: flex; align-items: center; gap: 12px; margin: 18px 0 0; }
+.step-img img {
+  width: 48px; height: 48px; object-fit: contain; flex: none;
+  background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 6px;
+  image-rendering: auto;
+}
+.step-img figcaption { font-size: 14.5px; color: var(--muted); }
+
 /* Campo */
 .field { display: grid; gap: 6px; }
 .field-label { font-size: 14px; font-weight: 650; }
