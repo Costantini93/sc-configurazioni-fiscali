@@ -62,6 +62,8 @@ const PRINTER_MODELS = [
 // Se un modello non ha foto si vede l'icona della stampante.
 const PRINTER_PHOTOS = {
   'Custom Big': ['assets/printers/custom.jpg'],
+  'Labware Smart RT': ['assets/printers/labware-smart-rt.jpg'],
+  'Labware Basiq': ['assets/printers/labware-basiq.jpg'],
   '3i RT 30 / RT 40': ['assets/printers/3i-rt-1.jpg', 'assets/printers/3i-rt-2.jpg'],
   'Emotiq Nota / Model M / Opera 57': ['assets/printers/emotiq-model-m.jpg'],
   'RCH Print F': ['assets/printers/rch-print-f.jpg']
