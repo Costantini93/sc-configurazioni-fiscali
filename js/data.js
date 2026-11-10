@@ -57,7 +57,7 @@ const PRINTER_BRANDS = [
   { brand: '3i', models: ['3i RT 30', '3i RT 40'] },
   { brand: 'Emotiq', models: ['Emotiq Model M', 'Emotiq Nota', 'Emotiq Opera 2'] },
   { brand: 'Epson', models: ['Epson FP-81 II RT'] },
-  { brand: 'RCH', models: ['RCH Print F'] },
+  { brand: 'RCH', models: ['RCH Print F', 'RCH Honda'] },
   { brand: 'Cassa in Cloud', models: ['Cassa in Cloud'] }
 ];
 
@@ -2183,6 +2183,111 @@ const PRINTERS = [
         where: 'printer',
         blocks: [
           { type: 'seq', seq: [{ m: 'VERIFICA PERIODICA' }, { t: 'OK' }] }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'rch-honda-verifica',
+    name: 'Verifica periodica RCH Honda',
+    brand: 'RCH',
+    printer: 'RCH Honda',
+    op: 'Verifica periodica',
+    summary: 'Chiusura, scontrini di prova con storno, chiusura e registrazione della verifica periodica.',
+    needs: ['C.F. e P.IVA da inserire nella verifica'],
+    steps: [
+      {
+        phase: 'Apertura',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [
+            { n: '3' }, { key: true }, { k: '%+', cap: 'fino a CHIUSURA' }, { m: 'CHIUSURA' }, { k: 'CONTANTI', x: 2 }
+          ] }
+        ]
+      },
+      {
+        phase: 'Scontrini',
+        title: 'Scontrini di prova',
+        where: 'printer',
+        intro: 'Emetti due scontrini:',
+        blocks: [
+          { type: 'table', head: ['Scontrino', 'Importo', 'Pagamento'], rows: [
+            ['1', '1,39 €', 'Contanti'],
+            ['2', '1,25 €', 'Elettronico']
+          ] }
+        ]
+      },
+      {
+        phase: 'Storno',
+        title: 'Avvia lo storno',
+        where: 'printer',
+        intro: 'Storna il primo scontrino.',
+        blocks: [
+          { type: 'seq', seq: [
+            { t: 'storno scontrino' }, { t: 'matricola' }, { k: 'CONTANTI' },
+            { t: 'giorno, mese, anno' }, { k: 'CONTANTI' }
+          ] }
+        ]
+      },
+      {
+        phase: 'Storno',
+        title: 'Dati dello scontrino',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [
+            { t: 'n. azzeramento' }, { k: 'CONTANTI' }, { t: 'n. scontrino' }, { k: 'CONTANTI' }
+          ] }
+        ]
+      },
+      {
+        phase: 'Storno',
+        title: 'Conferma lo storno',
+        where: 'printer',
+        intro: 'Sul riepilogo sposta la parentesi su SÌ.',
+        blocks: [
+          { type: 'seq', seq: [{ k: '%+', cap: 'fino a SÌ' }, { m: 'SÌ' }, { k: 'CONTANTI' }] },
+          { type: 'note', kind: 'info', text: 'Ripeti lo storno (dallo step precedente) per il secondo scontrino.' }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [
+            { n: '3' }, { key: true }, { k: '%+', cap: 'fino a CHIUSURA' }, { m: 'CHIUSURA' }, { k: 'CONTANTI', x: 2 }
+          ] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Entra in verifica',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '5' }, { key: true }, { n: '555', cap: 'password' }, { k: 'CONTANTI' }] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Intervento tecnico',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [
+            { k: '%+', cap: 'fino a MENU FUNZIONI RT' }, { m: 'MENU FUNZIONI RT' }, { k: 'CONTANTI' },
+            { m: 'INTERVENTO TECNICO' }, { k: 'CONTANTI' }
+          ] }
+        ]
+      },
+      {
+        phase: 'Verifica',
+        title: 'Verifica periodica',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [
+            { m: 'VER. PERIODICA' }, { k: 'CONTANTI' }, { t: 'C.F.' }, { k: 'CONTANTI' }, { t: 'P.IVA' }, { k: 'CONTANTI' }
+          ] }
         ]
       }
     ]
