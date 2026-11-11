@@ -1896,6 +1896,96 @@ const PRINTERS = [
   },
 
   {
+    id: 'epson-dgfe',
+    name: 'Sostituzione DGFE Epson FP-81 II RT',
+    brand: 'Epson',
+    printer: 'Epson FP-81 II RT',
+    op: 'Sostituzione DGFE',
+    summary: 'Sostituzione della scheda SD (memoria di dettaglio), inizializzazione ed etichetta della scheda.',
+    needs: [
+      'Scheda SD nuova (memoria di dettaglio)',
+      'Sigillo fiscale',
+      'Matricola della cassa'
+    ],
+    steps: [
+      {
+        phase: 'Sostituzione',
+        title: 'Spegni la cassa',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Spegni il registratore telematico e stacca il cavo di alimentazione.'] }
+        ]
+      },
+      {
+        phase: 'Sostituzione',
+        title: 'Sostituisci la scheda SD',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: [
+            'Rimuovi il sigillo fiscale.',
+            'Estrai la scheda SD che si trova sul retro.',
+            'Inserisci la nuova scheda SD.'
+          ] }
+        ]
+      },
+      {
+        phase: 'Sostituzione',
+        title: 'Accendi e attendi',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: [
+            'Accendi il registratore telematico: sul display compare ATTENDERE mentre verifica la memoria.',
+            'Aspetta che compaia STATO REGISTRAZIONE.'
+          ] },
+          { type: 'note', kind: 'warn', text: 'Mentre compare ATTENDERE non spegnere assolutamente la cassa.' }
+        ]
+      },
+      {
+        phase: 'Inizializzazione',
+        title: 'Inizializza la memoria',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ n: '2222' }, { key: true, cap: 'lettera C su tastiera PC' }] },
+          { type: 'note', kind: 'info', text: 'Sul display compare Z-SCELTA FUNZIONE.' },
+          { type: 'seq', seq: [{ n: '97' }, { k: 'ALZO CARTA', cap: 'lettera G su tastiera PC' }] },
+          { type: 'note', kind: 'warn', text: 'Compare ATTENDERE: non spegnere la cassa. Può servire qualche minuto.' }
+        ]
+      },
+      {
+        phase: 'Inizializzazione',
+        title: 'Controlla l\'esito',
+        where: 'printer',
+        intro: 'Alla fine la cassa stampa uno scontrino con l\'esito dell\'operazione e il numero progressivo della memoria.',
+        blocks: [
+          { type: 'input', var: 'progressivo', label: 'Numero progressivo della memoria', placeholder: 'dallo scontrino stampato' }
+        ]
+      },
+      {
+        phase: 'Inizializzazione',
+        title: 'Torna alla vendita',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true, cap: 'lettera C su tastiera PC' }] }
+        ]
+      },
+      {
+        phase: 'Etichetta',
+        title: 'Scrivi i dati sulla scheda SD',
+        where: 'printer',
+        intro: 'Sulla scheda SD scrivi:',
+        blocks: [
+          { type: 'table', head: ['Dato', 'Dove trovarlo'], rows: [
+            ['Data', 'La data di inizializzazione (oggi)'],
+            ['Numero progressivo', 'Sullo scontrino stampato dopo l\'inizializzazione'],
+            ['Matricola', 'La matricola del registratore telematico']
+          ] },
+          { type: 'seq', label: 'Numero progressivo annotato:', seq: [{ v: 'progressivo', empty: 'non annotato' }] }
+        ]
+      }
+    ]
+  },
+
+  {
     id: 'epson-lettura',
     name: 'Lettura giornaliera Epson',
     brand: 'Epson',
