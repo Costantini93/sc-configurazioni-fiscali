@@ -144,6 +144,7 @@
   // ---------- Stampanti e operazioni ----------
 
   var FN_OP = 'Codici e funzioni';
+  var HELP_OP = 'Cerca negli articoli';
 
   function printersOf(p) { return [].concat(p.printer); }
   function photosOf(model) { return PRINTER_PHOTOS[model] || []; }
@@ -227,7 +228,9 @@
       .map(function (p) { return { label: p.op, href: '#/p/' + p.id, p: p }; });
     var fns = FUNCTION_PAGES.filter(function (f) { return [].concat(f.printer).indexOf(model) !== -1; })
       .map(function (f) { return { label: FN_OP, href: '#/funzioni/' + f.id, f: f }; });
-    return procs.concat(fns);
+    var helps = HELP_CENTERS.filter(function (h) { return h.printer === model; })
+      .map(function (h) { return { label: HELP_OP, href: '#/assistenza/' + h.id, h: h }; });
+    return procs.concat(fns, helps);
   }
 
   // ---------- Menu laterale ----------
@@ -267,7 +270,7 @@
 
   // Evidenzia la voce della pagina aperta (anche dentro una procedura)
   function updateNav() {
-    var m = location.hash.match(/^#\/(p|funzioni)\/([^/]+)/);
+    var m = location.hash.match(/^#\/(p|funzioni|assistenza)\/([^/]+)/);
     var current = m ? '#/' + m[1] + '/' + m[2] : (/^#?\/?$/.test(location.hash) ? '#/' : (location.hash === '#/funzioni' ? '#/funzioni/custom' : ''));
     var opened = false;
     nav.querySelectorAll('.nav-link').forEach(function (a) {
@@ -510,6 +513,94 @@
         '<p class="fn-empty muted" hidden>Nessuna funzione trovata.</p>' +
       '</main>' +
     '</div>';
+  }
+
+  // ---------- Ricerca negli articoli del centro assistenza ----------
+
+  var helpState = { id: null, query: '', html: '' }; // ultima ricerca, ricordata tornando indietro
+  var helpTimer = null, helpSeq = 0;
+
+  function findHelp(id) {
+    for (var i = 0; i < HELP_CENTERS.length; i++) if (HELP_CENTERS[i].id === id) return HELP_CENTERS[i];
+    return null;
+  }
+
+  function helpIdle() {
+    return '<p class="help-msg muted">Scrivi almeno 3 lettere: gli articoli compaiono mentre scrivi.</p>';
+  }
+
+  function viewHelp(h) {
+    var same = helpState.id === h.id;
+    return '<div class="screen help">' +
+      topbar('<a class="icon-btn" href="#/" aria-label="Torna alla home">' + ICON.back + '</a>') +
+      '<main class="content">' +
+        '<h1 class="fn-title">' + esc(h.name) + '</h1>' +
+        '<p class="muted">' + esc(h.intro) + '</p>' +
+        '<form class="help-form" data-help="' + esc(h.id) + '" role="search">' +
+          '<label class="field-label" for="help-q">Cosa cerchi?</label>' +
+          '<div class="fn-search help-search">' + ICON.search +
+            '<input id="help-q" type="search" data-help-q enterkeyhint="search" autocomplete="off" placeholder="' + esc(h.example) + '" value="' + esc(same ? helpState.query : '') + '">' +
+          '</div>' +
+        '</form>' +
+        '<div class="help-results" aria-live="polite">' + (same && helpState.html ? helpState.html : helpIdle()) + '</div>' +
+        '<a class="block link-btn help-site" href="' + esc(h.url) + '" target="_blank" rel="noopener">' + ICON.web +
+          '<span>Apri il centro assistenza</span><span class="link-go">' + ICON.arrow + '</span></a>' +
+      '</main>' +
+    '</div>';
+  }
+
+  // Lo snippet di Zendesk evidenzia le parole trovate con <em>: si tiene solo quello, il resto diventa testo
+  function safeSnippet(html) {
+    var parts = String(html || '').split(/(<\/?em>)/);
+    var out = '';
+    parts.forEach(function (part) {
+      if (part === '<em>') out += '<mark>';
+      else if (part === '</em>') out += '</mark>';
+      else {
+        var tmp = document.createElement('textarea');
+        tmp.innerHTML = part.replace(/<[^>]*>/g, '');
+        out += esc(tmp.value);
+      }
+    });
+    return out;
+  }
+
+  function searchHelp(h, query) {
+    var q = query.trim();
+    var box = app.querySelector('.help-results');
+    if (!box) return;
+    helpState = { id: h.id, query: query, html: '' };
+    if (q.length < 3) { helpSeq++; box.innerHTML = helpIdle(); return; }
+    var seq = ++helpSeq;
+    var slow = setTimeout(function () {
+      if (seq === helpSeq) box.innerHTML = '<p class="help-msg muted">Cerco negli articoli…</p>';
+    }, 300);
+    var url = h.api + '?locale=' + encodeURIComponent(h.locale) + '&per_page=15&query=' + encodeURIComponent(q);
+    fetch(url).then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.json();
+    }).then(function (data) {
+      if (seq !== helpSeq) return;
+      var results = (data && data.results) || [];
+      var total = data.count || results.length;
+      var html = results.length
+        ? '<p class="help-msg muted">' + (total > results.length ? 'I primi ' + results.length + ' di ' + total + ' articoli' : results.length + (results.length === 1 ? ' articolo' : ' articoli')) + '</p>' +
+          '<ul class="help-list">' + results.map(function (a) {
+            return '<li><a class="help-item" href="' + esc(a.html_url) + '" target="_blank" rel="noopener">' +
+              '<span class="help-title">' + esc(a.title) + '</span>' +
+              (a.snippet ? '<span class="help-snippet">' + safeSnippet(a.snippet) + '…</span>' : '') +
+              '<span class="help-open">Apri l\'articolo ' + ICON.arrow + '</span>' +
+            '</a></li>';
+          }).join('') + '</ul>'
+        : '<p class="help-msg">Nessun articolo per «' + esc(q) + '». Prova con un\'altra parola, per esempio il nome della funzione.</p>';
+      helpState.html = html;
+      if (app.contains(box)) box.innerHTML = html;
+    }).catch(function () {
+      if (seq !== helpSeq || !app.contains(box)) return;
+      box.innerHTML = '<p class="help-msg help-error">' + ICON.warn + '<span>' +
+        (navigator.onLine === false ? 'Sei offline: la ricerca negli articoli richiede internet.' : 'Il centro assistenza non ha risposto. Riprova tra poco.') +
+        '</span></p>';
+    }).then(function () { clearTimeout(slow); });
   }
 
   // ---------- Ricerca in home ----------
@@ -765,6 +856,12 @@
     }
 
     lastStep = { id: null, i: -1 };
+    if (parts[0] === 'assistenza') {
+      var hc = findHelp(parts[1]);
+      if (!hc) return go('#/');
+      render(viewHelp(hc));
+      return;
+    }
     if (parts[0] === 'funzioni') {
       // #/funzioni (vecchio link) apre le funzioni Custom
       // #/funzioni/<pagina>/<ricerca> apre la pagina già filtrata (dalla ricerca in home)
@@ -886,9 +983,27 @@
     if (e.target.hasAttribute && e.target.hasAttribute('data-pick')) onPick(e.target);
   });
 
+  // Invio nella ricerca degli articoli: cerca subito e chiude la tastiera del telefono
+  app.addEventListener('submit', function (e) {
+    var form = e.target.closest('[data-help]');
+    if (!form) return;
+    e.preventDefault();
+    clearTimeout(helpTimer);
+    var input = form.querySelector('[data-help-q]');
+    searchHelp(findHelp(form.getAttribute('data-help')), input.value);
+    input.blur();
+  });
+
   app.addEventListener('input', function (e) {
     if (e.target.hasAttribute && e.target.hasAttribute('data-filter')) return filterFunctions();
     if (e.target.hasAttribute && e.target.hasAttribute('data-home-search')) return filterHome();
+    if (e.target.hasAttribute && e.target.hasAttribute('data-help-q')) {
+      var hcIn = findHelp(e.target.form.getAttribute('data-help'));
+      var val = e.target.value;
+      clearTimeout(helpTimer);
+      helpTimer = setTimeout(function () { searchHelp(hcIn, val); }, 400);
+      return;
+    }
     var key = e.target.getAttribute && e.target.getAttribute('data-var');
     var p = currentPrinter();
     if (!key || !p) return;

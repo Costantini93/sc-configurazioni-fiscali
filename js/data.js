@@ -2953,6 +2953,21 @@ const LABWARE_FUNCTIONS = [
   }
 ];
 
+// Centri assistenza online: ricerca degli articoli con l'API pubblica di Zendesk.
+// Compaiono nel menu del modello indicato in printer, come operazione "Cerca negli articoli".
+const HELP_CENTERS = [
+  {
+    id: 'cic',
+    printer: 'Cassa in Cloud',
+    name: 'Articoli Cassa in Cloud',
+    intro: 'Cerca nelle guide ufficiali del centro assistenza Cassa in Cloud.',
+    url: 'https://cassaincloud.zendesk.com/hc/it',
+    api: 'https://cassaincloud.zendesk.com/api/v2/help_center/articles/search.json',
+    locale: 'it',
+    example: 'es. stampante, fattura, corrispettivi'
+  }
+];
+
 const FUNCTION_PAGES = [
   {
     id: 'custom',

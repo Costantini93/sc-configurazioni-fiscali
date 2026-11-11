@@ -656,3 +656,26 @@ td:first-child { font-weight: 600; }
   .btn, .printer-card, .icon-btn, .nav-group > summary::after, .nav-sub summary::after { transition: none; }
   .btn:active:not(:disabled), .printer-card:active, .icon-btn:active { transform: none; }
 }
+
+/* ---------- Ricerca negli articoli del centro assistenza ---------- */
+
+.help-form { display: grid; gap: 8px; margin-top: 16px; }
+.help-search { position: static; margin: 0; }
+.help-results { margin-top: 16px; }
+.help-msg { margin: 0 4px 12px; font-size: 15px; }
+.help-error { display: flex; align-items: flex-start; gap: 8px; color: var(--warn-ink); }
+.help-error svg { font-size: 20px; margin-top: 2px; }
+.help-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.help-item {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 16px; min-height: 44px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.help-item:hover { border-color: var(--brand-2); }
+.theme-dark .help-item:hover { border-color: var(--accent); }
+.help-title { font-family: var(--font-key); font-size: 18px; font-weight: 600; line-height: 1.25; }
+.help-snippet { font-size: 15px; color: var(--muted); line-height: 1.5; max-width: 65ch; }
+.help-snippet mark { background: var(--info-bg); color: var(--info-ink); border-radius: 4px; padding: 0 2px; }
+.help-open { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: var(--info-ink); }
+.help-site { margin-top: 24px; }

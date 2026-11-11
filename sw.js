@@ -1,5 +1,5 @@
 // Quando si aggiungono nuovi file (es. immagini) inserirli in FILES e aumentare la versione.
-var CACHE = 'sc-config-v40';
+var CACHE = 'sc-config-v41';
 
 var FILES = [
   './',
@@ -50,6 +50,8 @@ self.addEventListener('activate', function (e) {
 // Rete prima (contenuti sempre aggiornati), cache se offline
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
+  // le richieste ad altri siti (es. ricerca negli articoli) vanno in rete senza passare dalla cache
+  if (new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(
     fetch(e.request).then(function (res) {
       var copy = res.clone();
