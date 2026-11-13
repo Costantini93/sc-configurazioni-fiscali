@@ -52,7 +52,7 @@ const EMOTIQ_ANNULLO = [
 // Marche e modelli, nell'ordine in cui compaiono nel menu e in home.
 // Le marche con più modelli diventano una categoria con dentro i modelli.
 const PRINTER_BRANDS = [
-  { brand: 'Custom', models: ['Custom Big'] },
+  { brand: 'Custom', models: ['Custom Big', 'Custom K3'] },
   { brand: 'Labware', models: ['Labware Smart RT', 'Labware Basiq'] },
   { brand: '3i', models: ['3i RT 30', '3i RT 40'] },
   { brand: 'Emotiq', models: ['Emotiq Model M', 'Emotiq Nota', 'Emotiq Opera 2'] },
@@ -611,7 +611,7 @@ const PRINTERS = [
     id: 'custom-k3',
     name: 'Tastierino K3',
     brand: 'Custom',
-    printer: 'Custom Big',
+    printer: ['Custom Big', 'Custom K3'],
     op: 'Tastierino K3',
     summary: 'Passaggio da FPU a LOCAL e stampa dell\'elenco delle programmazioni.',
     steps: [
@@ -2474,6 +2474,91 @@ function stepsFrom(id, first, last, phase) {
 }
 
 PRINTERS.push(
+  {
+    id: 'custom-k3-preparazione',
+    name: 'Preparazione Custom K3',
+    brand: 'Custom',
+    printer: 'Custom K3',
+    op: 'Preparazione',
+    summary: 'Passaggio a LOCAL, configurazione con RX Config, poi fiscalizzazione, censimento e attivazione come sulla Custom Big.',
+    needs: [
+      'Stampante collegata alla rete con cavo Ethernet',
+      'PC con il programma RX Config',
+      'Dati del cliente per l\'intestazione dello scontrino',
+      'Accesso al portale Custom4U'
+    ],
+    legend: PRINTERS[0].legend,
+    steps: [].concat(
+      [
+        {
+          phase: 'Tastierino',
+          title: 'Passa a LOCAL',
+          where: 'printer',
+          blocks: [
+            { type: 'seq', seq: [{ n: '222' }, { key: true }] },
+            { type: 'note', kind: 'info', text: 'Dal tastierino: la cassa passa da FPU (lavora da PC) a LOCAL (lavora in manuale).' }
+          ]
+        },
+        {
+          phase: 'Tastierino',
+          title: 'Configurazione',
+          where: 'printer',
+          blocks: [
+            { type: 'seq', seq: [{ key: true }, { n: '01' }, { k: 'SUBTOT', cap: 'configurazione' }] }
+          ]
+        },
+        {
+          phase: 'RX Config',
+          title: 'Collegamento alla stampante',
+          where: 'pc',
+          intro: 'Apri RX Config sul PC.',
+          blocks: [
+            { type: 'input', var: 'ip', label: 'Indirizzo IP della stampante', placeholder: 'es. 192.168.1.100' },
+            { type: 'seq', seq: [
+              { m: 'Comunicazione' }, { m: 'Config. porta ETH' },
+              { v: 'ip', cap: 'inserisci l\'IP', empty: 'IP non annotato' }, { m: 'Carica dati da stampante' }
+            ] }
+          ]
+        },
+        {
+          phase: 'RX Config',
+          title: 'Intestazione scontrino',
+          where: 'pc',
+          blocks: [
+            { type: 'seq', seq: [{ m: 'Intestazione scontrino' }] },
+            { type: 'list', items: ['Inserisci i dati del cliente: ragione sociale, indirizzo, partita IVA.'] }
+          ]
+        },
+        {
+          phase: 'RX Config',
+          title: 'Tastiera e IVA',
+          where: 'pc',
+          blocks: [
+            { type: 'seq', seq: [{ m: 'Config. tastiera' }, { m: 'Config. IVA' }] },
+            { type: 'table', head: ['Reparto', 'Aliquota IVA'], rows: [
+              ['1', '10%'],
+              ['2', '22%'],
+              ['3', '4%']
+            ] }
+          ]
+        },
+        {
+          phase: 'RX Config',
+          title: 'Salva dati su stampante',
+          where: 'pc',
+          blocks: [
+            { type: 'seq', seq: [{ m: 'Salva dati su stampante' }] },
+            { type: 'note', kind: 'tip', text: 'Attendi che il salvataggio sia completato prima di proseguire.' }
+          ]
+        }
+      ],
+      // da qui in poi come la preparazione della Custom Big
+      stepsFrom('custom-big', 'Fiscalizzazione', 'Attivazione', 'Attivazione'),
+      stepsFrom('custom-big', 'Registra la macchina nel portale', 'Aggiornamento software', 'Portale'),
+      stepsFrom('custom-big', 'Scontrini di prova', 'Chiusura cassa', 'Verifica')
+    )
+  },
+
   {
     id: 'labware-cambio-rs',
     name: 'Cambio ragione sociale Labware Smart RT',
