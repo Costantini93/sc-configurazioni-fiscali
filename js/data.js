@@ -3143,6 +3143,42 @@ const HELP_CENTERS = [
   }
 ];
 
+// Funzioni della Epson FP-81 II RT
+const EPSON_FUNCTIONS = [
+  {
+    id: 'mf',
+    name: 'Memoria fiscale',
+    groups: [
+      { items: [
+        ['12', 'LETTURA MEMORIA FISCALE (CHIUSURE) DA CHIUSURA A CHIUSURA', { seq: [{ n: '2222' }, { key: true }, { n: '12' }], note: 'Poi inserisci il numero della prima e dell\'ultima chiusura.' }],
+        ['13', 'LETTURA MEMORIA FISCALE (CHIUSURE) DA DATA A DATA', { seq: [{ n: '2222' }, { key: true }, { n: '13' }], note: 'Poi inserisci la data di inizio e di fine.' }]
+      ] }
+    ]
+  },
+  {
+    id: 'dgfe',
+    name: 'DGFE',
+    groups: [
+      { items: [
+        ['98', 'LETTURA DGFE DA DATA E SCONTRINO', { seq: [{ n: '2222' }, { key: true }, { n: '98' }], note: 'Poi inserisci la data e i numeri degli scontrini.' }],
+        ['99', 'LETTURA DGFE DA DATA A DATA', { seq: [{ n: '2222' }, { key: true }, { n: '99' }], note: 'Poi inserisci la data di inizio e di fine.' }],
+        ['97', 'INIZIALIZZAZIONE NUOVA MEMORIA DI DETTAGLIO (SD)', { seq: [{ n: '2222' }, { key: true }, { n: '97' }, { k: 'ALZO CARTA' }], note: 'Solo dopo aver inserito la nuova scheda SD: vedi Sostituzione DGFE.' }]
+      ] }
+    ]
+  },
+  {
+    id: 'altro',
+    name: 'Altre funzioni',
+    groups: [
+      { items: [
+        ['01', 'LETTURA GIORNALIERA', { seq: [{ n: '1111' }, { key: true }, { n: '01' }, { k: 'CONTANTI' }], note: 'Poi Chiave per tornare alla vendita.' }],
+        ['91', 'ANNULLO SCONTRINO', { seq: [{ n: '2222' }, { key: true }, { n: '91' }, { t: 'matricola' }, { k: 'CONTANTE' }] }],
+        ['19', 'IMPOSTAZIONI DI RETE (INDIRIZZO IP)', { seq: [{ n: '3333' }, { key: true }, { n: '19' }], note: 'CONTANTI ×2 per leggere l\'IP.' }]
+      ] }
+    ]
+  }
+];
+
 const FUNCTION_PAGES = [
   {
     id: 'custom',
@@ -3167,5 +3203,13 @@ const FUNCTION_PAGES = [
     meta: 'Codici X, Z, SET, opzioni e tasti in REG',
     intro: 'Codici della Labware Basiq dal manuale utente (ver. 5.05). Chiave 1 = X, Chiave 2 = Z, Chiave 3 = SET.',
     sections: LABWARE_FUNCTIONS
+  },
+  {
+    id: 'epson',
+    printer: 'Epson FP-81 II RT',
+    name: 'Funzioni Epson FP-81 II RT',
+    meta: 'Letture di memoria fiscale e DGFE e altri codici',
+    intro: 'Codici della Epson FP-81 II RT. Il tasto chiave è la lettera C sulla tastiera PC.',
+    sections: EPSON_FUNCTIONS
   }
 ];
