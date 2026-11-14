@@ -1071,6 +1071,82 @@ const PRINTERS = [
   },
 
   {
+    id: 'labware-basiq-dgfe',
+    name: 'Sostituzione DGFE Labware Basiq',
+    brand: 'Labware',
+    printer: 'Labware Basiq',
+    op: 'Sostituzione DGFE',
+    summary: 'Chiusura, aggiornamento, sostituzione fisica della DGFE, attivazione e registrazione dell\'intervento.',
+    needs: ['DGFE nuova', 'Piombo', 'C.F. del tecnico e P.IVA di S.C.'],
+    legend: LABWARE_LEGEND,
+    steps: [
+      {
+        phase: 'Preparazione',
+        title: 'Chiusura',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '01' }, { k: 'CONTANTI' }] }
+        ]
+      },
+      {
+        phase: 'Preparazione',
+        title: 'Aggiornamento',
+        where: 'printer',
+        intro: 'Solo se c\'è un aggiornamento da fare.',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '80' }, { k: 'ANNULLO SCONTRINO' }] },
+          { type: 'note', kind: 'warn', text: 'Dura circa 5-6 minuti: non spegnere la cassa finché non ha finito.' }
+        ]
+      },
+      {
+        phase: 'Sostituzione',
+        title: 'Stacca la corrente',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Stacca il cavo di alimentazione.'] }
+        ]
+      },
+      {
+        phase: 'Sostituzione',
+        title: 'Apri la cassa',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: ['Togli il piombo e sfila la placca grigia.'] }
+        ]
+      },
+      {
+        phase: 'Sostituzione',
+        title: 'Sostituisci la DGFE',
+        where: 'printer',
+        blocks: [
+          { type: 'list', items: [
+            'Sfila la DGFE e inserisci quella nuova.',
+            'Rimetti la placca grigia e ricollega la corrente.'
+          ] }
+        ]
+      },
+      {
+        phase: 'Attivazione',
+        title: 'Attiva la DGFE',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '2' }, { key: true }, { n: '18' }] },
+          { type: 'note', kind: 'info', text: 'L\'attivazione parte da sola.' }
+        ]
+      },
+      {
+        phase: 'Attivazione',
+        title: 'Registra l\'intervento',
+        where: 'printer',
+        blocks: [
+          { type: 'seq', seq: [{ key: true }, { n: '9626' }, { key: true }, { n: '24' }, { t: 'dati richiesti' }] },
+          { type: 'list', items: ['Alla fine rimetti il piombo.'] }
+        ]
+      }
+    ]
+  },
+
+  {
     id: 'labware-annullo',
     name: 'Annullo scontrino Labware Basiq',
     brand: 'Labware',
